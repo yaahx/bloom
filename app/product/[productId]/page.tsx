@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { useCart } from "@/context/CartContext";
 import defaultProducts from "@/data/products.json";
+import { formatKES } from "@/lib/utils";
 import { Product } from "@/types/product";
 import {
   Check,
@@ -93,7 +94,7 @@ export default function ProductDetailPage() {
   };
 
   const whatsappInquiryUrl = `https://wa.me/15551234567?text=${encodeURIComponent(
-    `Hello BloomShop! I am interested in ordering "${product.name}" ($${product.price}). Do you have it in stock?`
+    `Hello BloomShop! I am interested in ordering "${product.name}" (${formatKES(product.price)}). Do you have it in stock?`
   )}`;
 
   return (
@@ -154,12 +155,12 @@ export default function ProductDetailPage() {
 
           {/* Pricing */}
           <div className="flex items-baseline gap-3">
-            <span className="text-3xl sm:text-4xl font-black text-foreground">
-              ${product.price.toFixed(2)}
+            <span className="text-2xl sm:text-4xl font-black text-foreground">
+              {formatKES(product.price)}
             </span>
             {product.originalPrice && product.originalPrice > product.price && (
-              <span className="text-lg text-muted-foreground line-through">
-                ${product.originalPrice.toFixed(2)}
+              <span className="text-base sm:text-lg text-muted-foreground line-through">
+                {formatKES(product.originalPrice)}
               </span>
             )}
           </div>
@@ -203,7 +204,7 @@ export default function ProductDetailPage() {
               </div>
 
               <span className="text-xs text-muted-foreground">
-                Subtotal: <strong className="text-foreground">${(product.price * quantity).toFixed(2)}</strong>
+                Subtotal: <strong className="text-foreground">{formatKES(product.price * quantity)}</strong>
               </span>
             </div>
           </div>

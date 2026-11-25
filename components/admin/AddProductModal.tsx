@@ -170,28 +170,28 @@ export default function AddProductModal({
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-1.5">
               <label className="text-xs font-semibold text-foreground uppercase tracking-wider">
-                Price ($) *
+                Price (KES) *
               </label>
               <Input
                 type="number"
                 step="0.01"
                 value={price}
                 onChange={(e) => setPrice(e.target.value)}
-                placeholder="49.99"
+                placeholder="3500"
                 required
               />
             </div>
 
             <div className="space-y-1.5">
               <label className="text-xs font-semibold text-foreground uppercase tracking-wider">
-                Original Price ($ optional)
+                Original Price (KES, optional)
               </label>
               <Input
                 type="number"
                 step="0.01"
                 value={originalPrice}
                 onChange={(e) => setOriginalPrice(e.target.value)}
-                placeholder="65.00"
+                placeholder="4500"
               />
             </div>
           </div>

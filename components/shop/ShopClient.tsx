@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import defaultProducts from "@/data/products.json";
+import { formatKES } from "@/lib/utils";
 import { Product } from "@/types/product";
 import {
   ArrowUpDown,
@@ -27,7 +28,7 @@ export default function ShopClient() {
   const [selectedCategory, setSelectedCategory] = useState<string>(initialCategory);
   const [searchQuery, setSearchQuery] = useState<string>(initialSearch);
   const [selectedBadge, setSelectedBadge] = useState<string>("All");
-  const [maxPrice, setMaxPrice] = useState<number>(150);
+  const [maxPrice, setMaxPrice] = useState<number>(6000);
   const [sortBy, setSortBy] = useState<string>("featured");
   const [isMobileFiltersOpen, setIsMobileFiltersOpen] = useState<boolean>(false);
 
@@ -98,7 +99,7 @@ export default function ShopClient() {
     setSelectedCategory("All");
     setSearchQuery("");
     setSelectedBadge("All");
-    setMaxPrice(150);
+    setMaxPrice(6000);
     setSortBy("featured");
   };
 
@@ -106,7 +107,7 @@ export default function ShopClient() {
     selectedCategory !== "All" ||
     searchQuery !== "" ||
     selectedBadge !== "All" ||
-    maxPrice < 150 ||
+    maxPrice < 6000 ||
     sortBy !== "featured";
 
   return (
@@ -243,20 +244,20 @@ export default function ShopClient() {
               <span className="font-semibold text-foreground uppercase tracking-wider">
                 Max Price
               </span>
-              <span className="font-bold text-primary">${maxPrice}</span>
+              <span className="font-bold text-primary">{formatKES(maxPrice)}</span>
             </div>
             <input
               type="range"
-              min="20"
-              max="150"
-              step="5"
+              min="500"
+              max="6000"
+              step="100"
               value={maxPrice}
               onChange={(e) => setMaxPrice(Number(e.target.value))}
               className="w-full accent-primary cursor-pointer h-1.5 bg-muted rounded-lg"
             />
             <div className="flex justify-between text-[10px] text-muted-foreground">
-              <span>$20</span>
-              <span>$150+</span>
+              <span>KES 500</span>
+              <span>KES 6,000+</span>
             </div>
           </div>
 
@@ -317,12 +318,12 @@ export default function ShopClient() {
                   />
                 </span>
               )}
-              {maxPrice < 150 && (
+              {maxPrice < 6000 && (
                 <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-card border border-border text-[11px]">
-                  Under ${maxPrice}
+                  Under {formatKES(maxPrice)}
                   <X
                     className="h-3 w-3 cursor-pointer text-muted-foreground hover:text-foreground"
-                    onClick={() => setMaxPrice(150)}
+                    onClick={() => setMaxPrice(6000)}
                   />
                 </span>
               )}

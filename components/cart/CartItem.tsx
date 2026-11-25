@@ -3,6 +3,7 @@
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { useCart } from "@/context/CartContext";
+import { formatKES } from "@/lib/utils";
 import { Minus, Plus, Trash2 } from "lucide-react";
 import Image from "next/image";
 
@@ -40,7 +41,7 @@ export default function CartItem({ item, isLast }: CartItemProps) {
                 {item.name}
               </h2>
               <p className="text-sm text-muted-foreground mt-1">
-                ${item.price.toFixed(2)} each
+                {formatKES(item.price)} each
               </p>
             </div>
 
@@ -82,7 +83,7 @@ export default function CartItem({ item, isLast }: CartItemProps) {
 
             <div className="text-right">
               <p className="text-lg font-bold text-foreground">
-                ${(item.price * item.quantity).toFixed(2)}
+                {formatKES(item.price * item.quantity)}
               </p>
             </div>
           </div>

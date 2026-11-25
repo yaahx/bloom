@@ -2,8 +2,8 @@
   {
     "id": 1,
     "name": "AirFlex Runner",
-    "price": 89,
-    "originalPrice": 110,
+    "price": 3500,
+    "originalPrice": 4200,
     "category": "Shoes",
     "badge": "Popular",
     "rating": 4.8,
@@ -14,8 +14,8 @@
   {
     "id": 2,
     "name": "Urban Street Pro",
-    "price": 99,
-    "originalPrice": 130,
+    "price": 3800,
+    "originalPrice": 4800,
     "category": "Shoes",
     "badge": "Trending",
     "rating": 4.9,
@@ -26,7 +26,7 @@
   {
     "id": 3,
     "name": "Classic Court 90s",
-    "price": 79,
+    "price": 2900,
     "category": "Shoes",
     "badge": "Sale",
     "rating": 4.7,
@@ -37,8 +37,8 @@
   {
     "id": 4,
     "name": "Volt Edge High",
-    "price": 119,
-    "originalPrice": 145,
+    "price": 4500,
+    "originalPrice": 5500,
     "category": "Shoes",
     "badge": "New",
     "isSoldOut": true,
@@ -50,7 +50,7 @@
   {
     "id": 5,
     "name": "Zenith Flow Knit",
-    "price": 129,
+    "price": 4800,
     "category": "Shoes",
     "rating": 4.6,
     "reviewsCount": 38,
@@ -60,7 +60,7 @@
   {
     "id": 6,
     "name": "Street Vibe Low",
-    "price": 69,
+    "price": 2600,
     "category": "Shoes",
     "rating": 4.5,
     "reviewsCount": 77,
@@ -70,8 +70,8 @@
   {
     "id": 7,
     "name": "Heavyweight Boxy Tee",
-    "price": 38,
-    "originalPrice": 48,
+    "price": 1500,
+    "originalPrice": 1900,
     "category": "T-Shirts",
     "badge": "Best Seller",
     "rating": 4.9,
@@ -82,7 +82,7 @@
   {
     "id": 8,
     "name": "Vintage Acid Wash Tee",
-    "price": 42,
+    "price": 1650,
     "category": "T-Shirts",
     "badge": "Trending",
     "rating": 4.8,
@@ -93,7 +93,7 @@
   {
     "id": 9,
     "name": "Minimalist Studio Tee",
-    "price": 32,
+    "price": 1250,
     "category": "T-Shirts",
     "badge": "Sale",
     "rating": 4.6,
@@ -104,7 +104,7 @@
   {
     "id": 10,
     "name": "Bloom Signature Graphic Tee",
-    "price": 45,
+    "price": 1800,
     "category": "T-Shirts",
     "badge": "New",
     "rating": 4.9,
@@ -115,7 +115,7 @@
   {
     "id": 11,
     "name": "Oversized Streetwear Tee",
-    "price": 39,
+    "price": 1550,
     "category": "T-Shirts",
     "rating": 4.7,
     "reviewsCount": 44,
@@ -125,8 +125,8 @@
   {
     "id": 12,
     "name": "Heavyweight Pullover Hoodie",
-    "price": 78,
-    "originalPrice": 95,
+    "price": 3200,
+    "originalPrice": 3900,
     "category": "Hoodies",
     "badge": "Trending",
     "rating": 4.9,
@@ -137,7 +137,7 @@
   {
     "id": 13,
     "name": "Minimalist Full-Zip Hoodie",
-    "price": 82,
+    "price": 3400,
     "category": "Hoodies",
     "badge": "New",
     "rating": 4.8,
@@ -148,7 +148,7 @@
   {
     "id": 14,
     "name": "Earthtone Boxy Hoodie",
-    "price": 75,
+    "price": 2950,
     "category": "Hoodies",
     "rating": 4.7,
     "reviewsCount": 61,
@@ -158,8 +158,8 @@
   {
     "id": 15,
     "name": "Signature Oversized Hoodie",
-    "price": 85,
-    "originalPrice": 105,
+    "price": 3500,
+    "originalPrice": 4200,
     "category": "Hoodies",
     "badge": "Popular",
     "rating": 4.9,
@@ -170,8 +170,8 @@
   {
     "id": 16,
     "name": "Urban Crossbody Sling Bag",
-    "price": 45,
-    "originalPrice": 55,
+    "price": 1800,
+    "originalPrice": 2200,
     "category": "Accessories",
     "badge": "Best Seller",
     "rating": 4.8,
@@ -182,7 +182,7 @@
   {
     "id": 17,
     "name": "Embroidered 6-Panel Cap",
-    "price": 28,
+    "price": 1100,
     "category": "Accessories",
     "rating": 4.7,
     "reviewsCount": 88,
@@ -192,7 +192,7 @@
   {
     "id": 18,
     "name": "Heavy Canvas Daily Tote",
-    "price": 34,
+    "price": 1350,
     "category": "Accessories",
     "badge": "New",
     "rating": 4.9,
@@ -203,7 +203,7 @@
   {
     "id": 19,
     "name": "Merino Wool Ribbed Beanie",
-    "price": 26,
+    "price": 950,
     "category": "Accessories",
     "badge": "Sale",
     "rating": 4.8,

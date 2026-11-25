@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
 import { useCart } from "@/context/CartContext";
+import { formatKES } from "@/lib/utils";
 import {
   ArrowLeft,
   Banknote,
@@ -51,9 +52,9 @@ export default function CheckoutPage() {
 
   // Cart calculations
   const subtotal = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
-  const standardShipping = subtotal > 50 ? 0 : 9.99;
-  const shippingFee = shippingMethod === "express" ? 14.99 : standardShipping;
-  const tax = subtotal * 0.08;
+  const standardShipping = subtotal > 3000 ? 0 : 500;
+  const shippingFee = shippingMethod === "express" ? 800 : standardShipping;
+  const tax = subtotal * 0.16;
   const total = subtotal + shippingFee + tax;
   const itemCount = cart.reduce((sum, item) => sum + item.quantity, 0);
 
@@ -100,7 +101,7 @@ export default function CheckoutPage() {
 
   // Order Confirmation Screen
   if (isCompleted && completedOrder) {
-    const waText = `Hello BloomShop! I just placed order #${completedOrder.orderNumber} for a total of $${completedOrder.total.toFixed(2)}. Customer: ${completedOrder.customer.name}. Please confirm my shipment!`;
+    const waText = `Hello BloomShop! I just placed order #${completedOrder.orderNumber} for a total of ${formatKES(completedOrder.total)}. Customer: ${completedOrder.customer.name}. Please confirm my shipment!`;
     const waUrl = `https://wa.me/15551234567?text=${encodeURIComponent(waText)}`;
 
     return (
@@ -132,7 +133,7 @@ export default function CheckoutPage() {
             </div>
             <div>
               <span className="text-xs text-muted-foreground block">Total Amount:</span>
-              <strong className="text-foreground text-base">${completedOrder.total.toFixed(2)}</strong>
+              <strong className="text-foreground text-base">{formatKES(completedOrder.total)}</strong>
             </div>
           </div>
 
@@ -153,7 +154,7 @@ export default function CheckoutPage() {
                       <span className="text-muted-foreground">Qty: {item.quantity}</span>
                     </div>
                   </div>
-                  <span className="font-semibold">${(item.price * item.quantity).toFixed(2)}</span>
+                  <span className="font-semibold">{formatKES(item.price * item.quantity)}</span>
                 </div>
               ))}
             </div>
@@ -351,7 +352,7 @@ export default function CheckoutPage() {
                     <span className="text-xs font-bold text-foreground block">Standard Delivery</span>
                     <span className="text-[11px] text-muted-foreground block">3-5 business days</span>
                     <span className="text-xs font-semibold text-primary mt-1 inline-block">
-                      {subtotal > 50 ? "FREE" : "$9.99"}
+                      {subtotal > 3000 ? "FREE" : "KES 500"}
                     </span>
                   </div>
                 </label>
@@ -373,7 +374,7 @@ export default function CheckoutPage() {
                   <div>
                     <span className="text-xs font-bold text-foreground block">Express Courier</span>
                     <span className="text-[11px] text-muted-foreground block">1-2 business days with tracking</span>
-                    <span className="text-xs font-semibold text-foreground mt-1 inline-block">$14.99</span>
+                    <span className="text-xs font-semibold text-foreground mt-1 inline-block">KES 800</span>
                   </div>
                 </label>
               </div>
@@ -528,12 +529,12 @@ export default function CheckoutPage() {
                       <div>
                         <h4 className="font-semibold text-foreground line-clamp-1">{item.name}</h4>
                         <span className="text-muted-foreground text-[11px]">
-                          Qty: {item.quantity} &times; ${item.price.toFixed(2)}
+                          Qty: {item.quantity} &times; {formatKES(item.price)}
                         </span>
                       </div>
                     </div>
                     <span className="font-bold text-foreground shrink-0">
-                      ${(item.price * item.quantity).toFixed(2)}
+                      {formatKES(item.price * item.quantity)}
                     </span>
                   </div>
                 ))}
@@ -545,24 +546,24 @@ export default function CheckoutPage() {
               <div className="space-y-2 text-xs">
                 <div className="flex justify-between text-muted-foreground">
                   <span>Subtotal</span>
-                  <span className="text-foreground font-medium">${subtotal.toFixed(2)}</span>
+                  <span className="text-foreground font-medium">{formatKES(subtotal)}</span>
                 </div>
                 <div className="flex justify-between text-muted-foreground">
                   <span>Shipping ({shippingMethod === "express" ? "Express" : "Standard"})</span>
                   <span className="text-foreground font-medium">
-                    {shippingFee === 0 ? <span className="text-emerald-600 font-bold">FREE</span> : `$${shippingFee.toFixed(2)}`}
+                    {shippingFee === 0 ? <span className="text-emerald-600 font-bold">FREE</span> : formatKES(shippingFee)}
                   </span>
                 </div>
                 <div className="flex justify-between text-muted-foreground">
                   <span>Estimated Tax (8%)</span>
-                  <span className="text-foreground font-medium">${tax.toFixed(2)}</span>
+                  <span className="text-foreground font-medium">{formatKES(tax)}</span>
                 </div>
 
                 <Separator className="my-2" />
 
                 <div className="flex justify-between text-sm sm:text-base font-bold text-foreground">
                   <span>Total Due</span>
-                  <span className="text-primary text-lg font-black">${total.toFixed(2)}</span>
+                  <span className="text-primary text-lg font-black">{formatKES(total)}</span>
                 </div>
               </div>
 
@@ -581,7 +582,7 @@ export default function CheckoutPage() {
                 ) : (
                   <span className="flex items-center gap-2">
                     <Lock className="h-4 w-4" />
-                    <span>Place Order &bull; ${total.toFixed(2)}</span>
+                    <span>Place Order &bull; {formatKES(total)}</span>
                   </span>
                 )}
               </Button>

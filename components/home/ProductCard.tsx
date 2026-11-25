@@ -2,7 +2,7 @@
 
 import { Card, CardContent } from "@/components/ui/card";
 import { useCart } from "@/context/CartContext";
-import { cn } from "@/lib/utils";
+import { cn, formatKES } from "@/lib/utils";
 import { Product } from "@/types/product";
 import { Check, ShoppingBag, Star } from "lucide-react";
 import Image from "next/image";
@@ -148,8 +148,8 @@ export default function ProductCard({ product, className }: ProductCardProps) {
         {/* Pricing Area: Current Price on Left, Strikethrough Discount on Right */}
         <div className="flex items-center justify-between pt-1 border-t border-border/40 mt-auto">
           <div className="flex items-baseline gap-1">
-            <span className="text-base font-bold text-foreground">
-              ${product.price.toFixed(2)}
+            <span className="text-sm sm:text-base font-bold text-foreground">
+              {formatKES(product.price)}
             </span>
           </div>
 
@@ -162,7 +162,7 @@ export default function ProductCard({ product, className }: ProductCardProps) {
             ) : product.originalPrice && product.originalPrice > product.price ? (
               <div className="flex items-center gap-1">
                 <span className="text-xs text-muted-foreground line-through">
-                  ${product.originalPrice.toFixed(2)}
+                  {formatKES(product.originalPrice)}
                 </span>
                 {discountPercent && (
                   <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-md bg-destructive/10 text-destructive">
