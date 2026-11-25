@@ -2,34 +2,13 @@
 
 import {
   Facebook,
-  Github,
-  Heart,
   Instagram,
-  Mail,
-  MapPin,
   MessageCircle,
-  Phone,
   Twitter,
 } from "lucide-react";
 import Link from "next/link";
-import { useState } from "react";
-import { Button } from "../ui/button";
-import { Input } from "../ui/input";
 
 export default function Footer() {
-  const [email, setEmail] = useState("");
-  const [subscribed, setSubscribed] = useState(false);
-
-  const handleNewsletterSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (email.trim()) {
-      setSubscribed(true);
-      setTimeout(() => {
-        setEmail("");
-        setSubscribed(false);
-      }, 4000);
-    }
-  };
 
   const footerSections = [
     {
@@ -46,18 +25,6 @@ export default function Footer() {
       title: "Customer Service",
       links: [
         { href: "/contact", label: "Contact Us" },
-        { href: "/cart", label: "Shopping Cart" },
-        { href: "/checkout", label: "Checkout & Tracking" },
-        { href: "https://wa.me/15551234567", label: "Live WhatsApp Support" },
-      ],
-    },
-    {
-      title: "Store Policy",
-      links: [
-        { href: "/contact", label: "Shipping Policy" },
-        { href: "/contact", label: "30-Day Easy Returns" },
-        { href: "/contact", label: "Authenticity Guarantee" },
-        { href: "/contact", label: "Privacy Policy" },
       ],
     },
   ];
@@ -66,52 +33,14 @@ export default function Footer() {
     { href: "https://instagram.com", icon: Instagram, label: "Instagram" },
     { href: "https://facebook.com", icon: Facebook, label: "Facebook" },
     { href: "https://twitter.com", icon: Twitter, label: "Twitter" },
-    { href: "https://github.com", icon: Github, label: "GitHub" },
   ];
 
   return (
     <footer className="bg-background border-t border-border">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Newsletter Section */}
-        <div className="py-10 sm:py-14 border-b border-border/60">
-          <div className="max-w-xl mx-auto text-center space-y-3">
-            <h3 className="text-xl sm:text-2xl font-bold text-foreground">
-              Stay in the loop with BloomShop
-            </h3>
-            <p className="text-xs sm:text-sm text-muted-foreground">
-              Subscribe for exclusive drop alerts, private discounts, and new season arrivals.
-            </p>
-
-            {subscribed ? (
-              <div className="p-3 bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 rounded-xl text-xs font-semibold animate-in fade-in">
-                ✓ Thank you for subscribing! We&apos;ve added you to the VIP drop list.
-              </div>
-            ) : (
-              <form
-                onSubmit={handleNewsletterSubmit}
-                className="flex flex-col sm:flex-row max-w-md mx-auto gap-2 pt-1"
-              >
-                <Input
-                  type="email"
-                  placeholder="Enter your email address"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="h-10 text-xs sm:text-sm rounded-xl"
-                  required
-                />
-                <Button
-                  type="submit"
-                  className="h-10 px-5 bg-primary text-primary-foreground hover:bg-primary/90 font-medium text-xs sm:text-sm rounded-xl"
-                >
-                  Subscribe
-                </Button>
-              </form>
-            )}
-          </div>
-        </div>
 
         {/* Links Grid */}
-        <div className="py-10 sm:py-12 grid grid-cols-2 md:grid-cols-4 gap-8">
+        <div className="py-10 sm:py-12 grid grid-cols-2 md:grid-cols-3 gap-8">
           {/* Brand info */}
           <div className="col-span-2 md:col-span-1 space-y-3">
             <Link

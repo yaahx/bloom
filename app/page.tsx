@@ -56,11 +56,11 @@ export default function Home() {
                 <h3 className="font-bold text-base sm:text-lg text-foreground tracking-tight">
                   Bloom shop
                 </h3>
-                <p className="text-xs text-muted-foreground flex items-center gap-1.5 mt-1">
-                  <span>123 Fashion Street, SoHo, New York, NY 10013</span>
-                  <span>&bull;</span>
-                  <span className="inline-flex items-center gap-1">
-                    <Clock className="h-3 w-3 text-muted-foreground" />
+                <p className="text-muted-foreground flex flex-wrap items-center gap-x-1.5 gap-y-0.5 mt-1">
+                  <span className="text-xs">123 Fashion Street, SoHo, New York, NY 10013</span>
+                  <span className="text-xs">&bull;</span>
+                  <span className="inline-flex items-center gap-1 text-[10px] sm:text-xs">
+                    <Clock className="h-3 w-3 text-muted-foreground shrink-0" />
                     10:00 AM - 8:00 PM
                   </span>
                 </p>
@@ -89,14 +89,14 @@ export default function Home() {
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-10 space-y-6 sm:space-y-10">
         {/* Shoes Category Carousel */}
         <CategoryCarousel
-          title="Footwear & Sneakers"
+          title="Shoes"
           categoryKey="Shoes"
           products={shoes}
         />
 
         {/* T-Shirts Category Carousel */}
         <CategoryCarousel
-          title="Heavyweight T-Shirts & Graphics"
+          title="T-Shirts"
           categoryKey="T-Shirts"
           products={tshirts}
         />
@@ -110,7 +110,7 @@ export default function Home() {
 
         {/* Accessories Category Carousel */}
         <CategoryCarousel
-          title="Everyday Bags & Accessories"
+          title="Accessories"
           categoryKey="Accessories"
           products={accessories}
         />

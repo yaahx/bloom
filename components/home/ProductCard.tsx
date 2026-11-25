@@ -156,7 +156,7 @@ export default function ProductCard({ product, className }: ProductCardProps) {
           {/* Where the Add to Cart button was: shows discounted amount or sold out */}
           <div className="flex items-center gap-1.5 text-right">
             {isSoldOut ? (
-              <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
+              <span className="text-[9px] sm:text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
                 Out of Stock
               </span>
             ) : product.originalPrice && product.originalPrice > product.price ? (
@@ -164,11 +164,6 @@ export default function ProductCard({ product, className }: ProductCardProps) {
                 <span className="text-xs text-muted-foreground line-through">
                   {formatKES(product.originalPrice)}
                 </span>
-                {discountPercent && (
-                  <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-md bg-destructive/10 text-destructive">
-                    -{discountPercent}%
-                  </span>
-                )}
               </div>
             ) : null}
           </div>
