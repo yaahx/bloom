@@ -2,6 +2,11 @@ export interface Product {
   id: number;
   name: string;
   price: number;
-  image?: string;
-  description?: string;
+  originalPrice?: number;
+  category: "Shoes" | "T-Shirts" | "Hoodies" | "Accessories" | string;
+  image: string;
+  description: string;
+  badge?: string;
+  rating?: number;
+  reviewsCount?: number;
 }

@@ -2,7 +2,7 @@
 
 import React, { createContext, useContext, useEffect, useState } from "react";
 
-interface CartItem {
+export interface CartItem {
   id: number;
   name: string;
   price: number;
@@ -13,7 +13,7 @@ interface CartItem {
 interface CartContextProps {
   cart: CartItem[];
   addToCart: (item: CartItem) => void;
-  removeFromCart: (name: number) => void;
+  removeFromCart: (id: number) => void;
   clearCart: () => void;
   updateQuantity: (id: number, quantity: number) => void;
 }
@@ -22,17 +22,30 @@ const CartContext = createContext<CartContextProps | undefined>(undefined);
 
 export const CartProvider = ({ children }: { children: React.ReactNode }) => {
   const [cart, setCart] = useState<CartItem[]>([]);
+  const [isInitialized, setIsInitialized] = useState(false);
 
   useEffect(() => {
-    const savedCart = localStorage.getItem("cart");
-    if (savedCart) {
-      setCart(JSON.parse(savedCart));
+    try {
+      const savedCart = localStorage.getItem("cart");
+      if (savedCart) {
+        setCart(JSON.parse(savedCart));
+      }
+    } catch {
+      // ignore JSON parse errors
+    } finally {
+      setIsInitialized(true);
     }
   }, []);
 
   useEffect(() => {
-    localStorage.setItem("cart", JSON.stringify(cart));
-  }, [cart]);
+    if (isInitialized) {
+      try {
+        localStorage.setItem("cart", JSON.stringify(cart));
+      } catch {
+        // ignore storage quota issues
+      }
+    }
+  }, [cart, isInitialized]);
 
   const addToCart = (item: CartItem) => {
     setCart((prevCart) => {
@@ -41,12 +54,12 @@ export const CartProvider = ({ children }: { children: React.ReactNode }) => {
       if (existingItem) {
         return prevCart.map((cartItem) =>
           cartItem.id === item.id
-            ? { ...cartItem, quantity: cartItem.quantity + 1 }
+            ? { ...cartItem, quantity: cartItem.quantity + (item.quantity || 1) }
             : cartItem
         );
       }
 
-      return [...prevCart, { ...item, quantity: 1 }];
+      return [...prevCart, { ...item, quantity: item.quantity || 1 }];
     });
   };
 
@@ -56,7 +69,11 @@ export const CartProvider = ({ children }: { children: React.ReactNode }) => {
 
   const clearCart = () => {
     setCart([]);
-    localStorage.removeItem("cart");
+    try {
+      localStorage.removeItem("cart");
+    } catch {
+      // ignore
+    }
   };
 
   const updateQuantity = (id: number, quantity: number) => {

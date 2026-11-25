@@ -1,13 +1,13 @@
 "use client";
 
 import {
-  ArrowRight,
   Facebook,
   Github,
   Heart,
   Instagram,
   Mail,
   MapPin,
+  MessageCircle,
   Phone,
   Twitter,
 } from "lucide-react";
@@ -15,204 +15,166 @@ import Link from "next/link";
 import { useState } from "react";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
-import { Separator } from "../ui/separator";
 
 export default function Footer() {
   const [email, setEmail] = useState("");
+  const [subscribed, setSubscribed] = useState(false);
 
   const handleNewsletterSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (email) {
-      console.log("Newsletter subscription:", email);
-      setEmail("");
+    if (email.trim()) {
+      setSubscribed(true);
+      setTimeout(() => {
+        setEmail("");
+        setSubscribed(false);
+      }, 4000);
     }
   };
 
   const footerSections = [
     {
-      title: "Shop",
+      title: "Shop Categories",
       links: [
-        { href: "/shop", label: "All Products" },
-        { href: "/shop", label: "New Arrivals" },
-        { href: "/shop", label: "Sale" },
-        { href: "/shop", label: "Featured" },
+        { href: "/shop", label: "All Collections" },
+        { href: "/shop?category=Shoes", label: "Footwear & Shoes" },
+        { href: "/shop?category=T-Shirts", label: "T-Shirts & Graphics" },
+        { href: "/shop?category=Hoodies", label: "Hoodies & Fleece" },
+        { href: "/shop?category=Accessories", label: "Bags & Accessories" },
       ],
     },
     {
-      title: "Customer Care",
+      title: "Customer Service",
       links: [
         { href: "/contact", label: "Contact Us" },
-        { href: "/", label: "Help Center" },
-        { href: "/", label: "Shipping Info" },
-        { href: "/", label: "Returns & Exchanges" },
+        { href: "/cart", label: "Shopping Cart" },
+        { href: "/checkout", label: "Checkout & Tracking" },
+        { href: "https://wa.me/15551234567", label: "Live WhatsApp Support" },
       ],
     },
     {
-      title: "Company",
+      title: "Store Policy",
       links: [
-        { href: "/about", label: "About Us" },
-        { href: "/", label: "Careers" },
-        { href: "/", label: "Blog" },
-        { href: "/", label: "Press" },
-      ],
-    },
-    {
-      title: "Legal",
-      links: [
-        { href: "/", label: "Privacy Policy" },
-        { href: "/", label: "Terms & Conditions" },
-        { href: "/", label: "Cookie Policy" },
-        { href: "/", label: "Accessibility" },
+        { href: "/contact", label: "Shipping Policy" },
+        { href: "/contact", label: "30-Day Easy Returns" },
+        { href: "/contact", label: "Authenticity Guarantee" },
+        { href: "/contact", label: "Privacy Policy" },
       ],
     },
   ];
 
   const socialLinks = [
-    { href: "#", icon: Facebook, label: "Facebook" },
-    { href: "#", icon: Twitter, label: "Twitter" },
-    { href: "#", icon: Instagram, label: "Instagram" },
-    { href: "#", icon: Github, label: "GitHub" },
+    { href: "https://instagram.com", icon: Instagram, label: "Instagram" },
+    { href: "https://facebook.com", icon: Facebook, label: "Facebook" },
+    { href: "https://twitter.com", icon: Twitter, label: "Twitter" },
+    { href: "https://github.com", icon: Github, label: "GitHub" },
   ];
 
   return (
     <footer className="bg-background border-t border-border">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="py-12 border-b border-border">
-          <div className="max-w-2xl mx-auto text-center">
-            <h3 className="text-2xl font-bold text-foreground mb-4">
-              Stay in the loop
+        {/* Newsletter Section */}
+        <div className="py-10 sm:py-14 border-b border-border/60">
+          <div className="max-w-xl mx-auto text-center space-y-3">
+            <h3 className="text-xl sm:text-2xl font-bold text-foreground">
+              Stay in the loop with BloomShop
             </h3>
-            <p className="text-muted-foreground mb-6">
-              Subscribe to our newsletter for exclusive offers, new arrivals,
-              and style inspiration.
+            <p className="text-xs sm:text-sm text-muted-foreground">
+              Subscribe for exclusive drop alerts, private discounts, and new season arrivals.
             </p>
-            <form
-              onSubmit={handleNewsletterSubmit}
-              className="flex max-w-md mx-auto gap-2"
-            >
-              <Input
-                type="email"
-                placeholder="Enter your email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="flex-1"
-                required
-              />
-              <Button
-                type="submit"
-                className="bg-primary text-primary-foreground hover:bg-primary/90"
+
+            {subscribed ? (
+              <div className="p-3 bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 rounded-xl text-xs font-semibold animate-in fade-in">
+                ✓ Thank you for subscribing! We&apos;ve added you to the VIP drop list.
+              </div>
+            ) : (
+              <form
+                onSubmit={handleNewsletterSubmit}
+                className="flex flex-col sm:flex-row max-w-md mx-auto gap-2 pt-1"
               >
-                <ArrowRight className="h-4 w-4" />
-                <span className="sr-only">Subscribe</span>
-              </Button>
-            </form>
+                <Input
+                  type="email"
+                  placeholder="Enter your email address"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="h-10 text-xs sm:text-sm rounded-xl"
+                  required
+                />
+                <Button
+                  type="submit"
+                  className="h-10 px-5 bg-primary text-primary-foreground hover:bg-primary/90 font-medium text-xs sm:text-sm rounded-xl"
+                >
+                  Subscribe
+                </Button>
+              </form>
+            )}
           </div>
         </div>
 
-        <div className="py-12">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-8">
-            <div className="lg:col-span-2">
-              <Link
-                className="text-2xl tracking-tight text-gray-900 hover:text-gray-700 transition-colors"
-                href="/"
-                aria-label="BloomShop Home"
+        {/* Links Grid */}
+        <div className="py-10 sm:py-12 grid grid-cols-2 md:grid-cols-4 gap-8">
+          {/* Brand info */}
+          <div className="col-span-2 md:col-span-1 space-y-3">
+            <Link
+              href="/"
+              className="text-xl font-black tracking-tight text-foreground"
+            >
+              BLOOM<span className="text-primary">SHOP</span>
+            </Link>
+            <p className="text-xs text-muted-foreground leading-relaxed">
+              Curated everyday streetwear, footwear, and lifestyle goods designed with premium comfort in mind.
+            </p>
+            <div className="flex items-center gap-2 pt-1">
+              <a
+                href="https://wa.me/15551234567"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#25D366]/10 text-[#25D366] hover:bg-[#25D366]/20 transition-colors text-xs font-semibold"
               >
-                BLOOM<span className="text-primary">SHOP</span>
-              </Link>
-              <p className="text-muted-foreground mb-6 max-w-sm">
-                Discover unique products that inspire your lifestyle. Quality
-                craftsmanship meets modern design.
-              </p>
+                <MessageCircle className="h-3.5 w-3.5" />
+                <span>WhatsApp: +1 (555) 123-4567</span>
+              </a>
+            </div>
+          </div>
 
-              <div className="space-y-3">
-                <div className="flex items-center gap-3 text-sm text-muted-foreground">
-                  <MapPin className="h-4 w-4 text-primary" />
-                  <span>123 Fashion Street, Style City, SC 12345</span>
-                </div>
-                <div className="flex items-center gap-3 text-sm text-muted-foreground">
-                  <Phone className="h-4 w-4 text-primary" />
-                  <span>+1 (555) 123-4567</span>
-                </div>
-                <div className="flex items-center gap-3 text-sm text-muted-foreground">
-                  <Mail className="h-4 w-4 text-primary" />
-                  <span>hello@bloomshop.com</span>
-                </div>
-              </div>
-
-              <div className="flex gap-3 mt-6">
-                {socialLinks.map(({ href, icon: Icon, label }) => (
-                  <Button
-                    key={label}
-                    variant="ghost"
-                    size="icon"
-                    asChild
-                    className="h-10 w-10 rounded-full bg-muted hover:bg-primary hover:text-primary-foreground transition-colors"
-                  >
-                    <Link href={href} aria-label={label}>
-                      <Icon className="h-4 w-4" />
+          {/* Section columns */}
+          {footerSections.map((section) => (
+            <div key={section.title} className="space-y-3">
+              <h4 className="text-xs font-bold uppercase tracking-wider text-foreground">
+                {section.title}
+              </h4>
+              <ul className="space-y-2">
+                {section.links.map((link) => (
+                  <li key={link.label}>
+                    <Link
+                      href={link.href}
+                      className="text-xs text-muted-foreground hover:text-primary transition-colors"
+                    >
+                      {link.label}
                     </Link>
-                  </Button>
+                  </li>
                 ))}
-              </div>
+              </ul>
             </div>
-
-            {footerSections.map((section, index) => (
-              <div
-                key={section.title}
-                className={`${index >= 2 ? "lg:col-span-1" : ""}`}
-              >
-                <h4 className="text-sm font-semibold text-foreground mb-4 uppercase tracking-wider">
-                  {section.title}
-                </h4>
-                <ul className="space-y-3">
-                  {section.links.map((link) => (
-                    <li key={link.label}>
-                      <Link
-                        href={link.href}
-                        className="text-sm text-muted-foreground hover:text-foreground transition-colors inline-block"
-                      >
-                        {link.label}
-                      </Link>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ))}
-          </div>
+          ))}
         </div>
 
-        <Separator className="my-8" />
+        {/* Bottom Bar */}
+        <div className="py-6 border-t border-border/60 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-muted-foreground">
+          <p>© {new Date().getFullYear()} BloomShop. All rights reserved.</p>
 
-        <div className="py-6 flex flex-col md:flex-row justify-between items-center gap-4">
-          <div>
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <span>© 2025 BloomShop™. Made with</span>
-              <Heart className="h-4 w-4 text-red-500 fill-current" />
-              <span>All Rights Reserved.</span>
-              <br />
-            </div>
-            <p className="text-sm text-muted-foreground">Developed by <a href="https://github.com/bloomtpl" target="_blank" rel="noopener noreferrer" className="font-bold hover:text-primary transition-colors">Bloomtpl</a> • Distributed by <a href="https://themewagon.com" target="_blank" rel="noopener noreferrer" className="font-bold hover:text-primary transition-colors">ThemeWagon</a></p>
-          </div>
-
-          <div className="flex items-center gap-6 text-sm">
-            <Link
-              href="/privacy"
-              className="text-muted-foreground hover:text-foreground transition-colors"
-            >
-              Privacy
-            </Link>
-            <Link
-              href="/terms"
-              className="text-muted-foreground hover:text-foreground transition-colors"
-            >
-              Terms
-            </Link>
-            <Link
-              href="/cookies"
-              className="text-muted-foreground hover:text-foreground transition-colors"
-            >
-              Cookies
-            </Link>
+          <div className="flex items-center space-x-3">
+            {socialLinks.map(({ href, icon: Icon, label }) => (
+              <a
+                key={label}
+                href={href}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="p-1.5 rounded-full hover:bg-muted text-muted-foreground hover:text-foreground transition-colors"
+                aria-label={label}
+              >
+                <Icon className="h-4 w-4" />
+              </a>
+            ))}
           </div>
         </div>
       </div>

@@ -18,23 +18,26 @@ export default function Cart() {
   }
 
   return (
-    <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
       <div className="flex items-center justify-between mb-8">
         <div>
-          <h1 className="text-3xl font-bold text-foreground">Shopping Cart</h1>
-          <p className="text-muted-foreground mt-2">
+          <h1 className="text-2xl sm:text-3xl font-extrabold text-foreground tracking-tight">
+            Shopping Cart
+          </h1>
+          <p className="text-xs sm:text-sm text-muted-foreground mt-1">
             {itemCount} {itemCount === 1 ? "item" : "items"} in your cart
           </p>
         </div>
 
         <Button
           variant="ghost"
+          size="sm"
           asChild
-          className="text-muted-foreground hover:text-foreground"
+          className="text-muted-foreground hover:text-foreground text-xs"
         >
-          <Link href="/" className="flex items-center gap-2">
-            <ArrowLeft className="h-4 w-4" />
-            Continue Shopping
+          <Link href="/shop" className="flex items-center gap-1.5">
+            <ArrowLeft className="h-3.5 w-3.5" />
+            <span>Continue Shopping</span>
           </Link>
         </Button>
       </div>

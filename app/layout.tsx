@@ -1,5 +1,6 @@
 import Footer from "@/components/layout/Footer";
 import Header from "@/components/layout/Header";
+import WhatsAppWidget from "@/components/layout/WhatsAppWidget";
 import { CartProvider } from "@/context/CartContext";
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
@@ -12,9 +13,9 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "Bloom E-Commerce Template",
+  title: "BloomShop — Premium Streetwear, Shoes, & Apparel",
   description:
-    "Discover a wide selection of trendy clothes, shoes and accessories on Bloom E-Commerce. Enjoy fast delivery and free returns. Shop now!",
+    "Discover curated collections of sneakers, heavyweight t-shirts, fleece hoodies, and everyday accessories at BloomShop. Enjoy fast delivery and instant WhatsApp customer support.",
 };
 
 export default function RootLayout({
@@ -25,12 +26,13 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${inter.className}  antialiased flex flex-col min-h-screen`}
+        className={`${inter.className} antialiased flex flex-col min-h-screen bg-background text-foreground selection:bg-primary/20 selection:text-primary`}
       >
         <CartProvider>
           <Header />
           <main className="flex-grow">{children}</main>
           <Footer />
+          <WhatsAppWidget phoneNumber="15551234567" />
         </CartProvider>
       </body>
     </html>

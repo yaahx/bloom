@@ -53,6 +53,12 @@ export default function Contact() {
 
   const contactInfo = [
     {
+      icon: MessageSquare,
+      title: "WhatsApp Chat",
+      details: ["+1 (555) 123-4567", "Live Chat & Sizing Support"],
+      description: "Fastest response time on WhatsApp",
+    },
+    {
       icon: Mail,
       title: "Email Us",
       details: ["hello@bloomshop.com", "support@bloomshop.com"],
@@ -68,7 +74,7 @@ export default function Contact() {
       icon: MapPin,
       title: "Visit Us",
       details: ["123 Fashion Street", "Style City, SC 12345"],
-      description: "Come say hello at our office",
+      description: "Come say hello at our showroom",
     },
     {
       icon: Clock,

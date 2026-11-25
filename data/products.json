@@ -3,70 +3,211 @@
     "id": 1,
     "name": "AirFlex Runner",
     "price": 89,
-    "image": "https://images.unsplash.com/photo-1579338559194-a162d19bf842?q=80&w=687&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-    "description": "Lightweight running sneakers designed for speed and comfort. Breathable mesh and durable sole."
+    "originalPrice": 110,
+    "category": "Shoes",
+    "badge": "Popular",
+    "rating": 4.8,
+    "reviewsCount": 124,
+    "image": "https://images.unsplash.com/photo-1579338559194-a162d19bf842?q=80&w=687&auto=format&fit=crop",
+    "description": "Lightweight running sneakers designed for speed and comfort. Breathable mesh upper with high-traction rubber sole."
   },
   {
     "id": 2,
     "name": "Urban Street Pro",
     "price": 99,
-    "image": "https://images.unsplash.com/photo-1608667508764-33cf0726b13a?q=80&w=880&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-    "description": "Minimalist sneakers for everyday wear. Premium leather with a modern urban look."
+    "originalPrice": 130,
+    "category": "Shoes",
+    "badge": "Trending",
+    "rating": 4.9,
+    "reviewsCount": 89,
+    "image": "https://images.unsplash.com/photo-1608667508764-33cf0726b13a?q=80&w=880&auto=format&fit=crop",
+    "description": "Minimalist streetwear sneakers built with premium leather overlays and responsive cushioned insoles."
   },
   {
     "id": 3,
     "name": "Classic Court 90s",
     "price": 79,
-    "image": "https://images.unsplash.com/photo-1465453869711-7e174808ace9?q=80&w=1176&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-    "description": "Retro-inspired sneakers with a tennis court vibe. Perfect balance between comfort and style."
+    "category": "Shoes",
+    "badge": "Sale",
+    "rating": 4.7,
+    "reviewsCount": 65,
+    "image": "https://images.unsplash.com/photo-1465453869711-7e174808ace9?q=80&w=1176&auto=format&fit=crop",
+    "description": "Retro-inspired sneakers with a 90s tennis court vibe. Vintage silhouette crafted for everyday versatility."
   },
   {
     "id": 4,
-    "name": "Volt Edge",
+    "name": "Volt Edge High",
     "price": 119,
-    "image": "https://images.unsplash.com/photo-1512374382149-233c42b6a83b?q=80&w=735&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-    "description": "Performance sneakers with bold details. Responsive cushioning for all-day energy."
+    "originalPrice": 145,
+    "category": "Shoes",
+    "badge": "New",
+    "rating": 4.9,
+    "reviewsCount": 42,
+    "image": "https://images.unsplash.com/photo-1512374382149-233c42b6a83b?q=80&w=735&auto=format&fit=crop",
+    "description": "High-performance dynamic sneakers with aggressive cushioning and high-top ankle stability."
   },
   {
     "id": 5,
-    "name": "Zenith Flow",
+    "name": "Zenith Flow Knit",
     "price": 129,
-    "image": "https://images.unsplash.com/photo-1608231387042-66d1773070a5?q=80&w=1074&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-    "description": "Premium lifestyle sneakers blending high-quality knit material and futuristic design."
+    "category": "Shoes",
+    "rating": 4.6,
+    "reviewsCount": 38,
+    "image": "https://images.unsplash.com/photo-1608231387042-66d1773070a5?q=80&w=1074&auto=format&fit=crop",
+    "description": "Next-gen lifestyle sneakers blending breathable circular knit with lightweight responsive foam."
   },
   {
     "id": 6,
     "name": "Street Vibe Low",
     "price": 69,
-    "image": "https://images.unsplash.com/photo-1511556532299-8f662fc26c06?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-    "description": "Casual low-top sneakers with a timeless silhouette. Built for versatility and comfort."
+    "category": "Shoes",
+    "rating": 4.5,
+    "reviewsCount": 77,
+    "image": "https://images.unsplash.com/photo-1511556532299-8f662fc26c06?q=80&w=1170&auto=format&fit=crop",
+    "description": "Casual low-top canvas sneakers featuring reinforced toe bumpers and vulcanized gum soles."
   },
   {
     "id": 7,
-    "name": "Nova Horizon",
-    "price": 109,
-    "image": "https://images.unsplash.com/photo-1516767254874-281bffac9e9a?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-    "description": "High-top sneakers crafted with suede and mesh. Perfect mix of streetwear and performance."
+    "name": "Heavyweight Boxy Tee",
+    "price": 38,
+    "originalPrice": 48,
+    "category": "T-Shirts",
+    "badge": "Best Seller",
+    "rating": 4.9,
+    "reviewsCount": 210,
+    "image": "https://images.unsplash.com/photo-1521572267360-ee0c2909d518?q=80&w=800&auto=format&fit=crop",
+    "description": "Premium 240 GSM combed cotton t-shirt with a relaxed drop-shoulder cut and durable ribbed collar."
   },
   {
     "id": 8,
-    "name": "Pulse React",
-    "price": 99,
-    "image": "https://images.unsplash.com/photo-1560769629-975ec94e6a86?q=80&w=764&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-    "description": "Dynamic sneakers with responsive cushioning. Designed for training and everyday comfort."
+    "name": "Vintage Acid Wash Tee",
+    "price": 42,
+    "category": "T-Shirts",
+    "badge": "Trending",
+    "rating": 4.8,
+    "reviewsCount": 95,
+    "image": "https://images.unsplash.com/photo-1583743814966-8936f5b7be1a?q=80&w=800&auto=format&fit=crop",
+    "description": "Individually washed vintage-aesthetic tee with subtle distressing and ultra-soft hand feel."
   },
   {
     "id": 9,
-    "name": "Core Street Retro",
-    "price": 85,
-    "image": "https://images.unsplash.com/photo-1621315271772-28b1f3a5df87?q=80&w=687&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-    "description": "Old-school sneakers inspired by 80s basketball. Durable construction with vintage vibes."
+    "name": "Minimalist Studio Tee",
+    "price": 32,
+    "category": "T-Shirts",
+    "badge": "Sale",
+    "rating": 4.6,
+    "reviewsCount": 54,
+    "image": "https://images.unsplash.com/photo-1503342217505-b0a15ec3261c?q=80&w=800&auto=format&fit=crop",
+    "description": "Clean, understated essential crewneck tee crafted from 100% organic cotton for daily luxury."
   },
   {
     "id": 10,
-    "name": "AeroFlex Lite",
+    "name": "Bloom Signature Graphic Tee",
+    "price": 45,
+    "category": "T-Shirts",
+    "badge": "New",
+    "rating": 4.9,
+    "reviewsCount": 63,
+    "image": "https://images.unsplash.com/photo-1576566588028-4147f3842f27?q=80&w=800&auto=format&fit=crop",
+    "description": "Original botanical typography screen-printed on heavy cotton with eco-friendly water-based inks."
+  },
+  {
+    "id": 11,
+    "name": "Oversized Streetwear Tee",
+    "price": 39,
+    "category": "T-Shirts",
+    "rating": 4.7,
+    "reviewsCount": 44,
+    "image": "https://images.unsplash.com/photo-1618354691373-d851c5c3a990?q=80&w=800&auto=format&fit=crop",
+    "description": "Modern wide-sleeve silhouette tailored for a relaxed, effortless streetwear drape."
+  },
+  {
+    "id": 12,
+    "name": "Heavyweight Pullover Hoodie",
+    "price": 78,
+    "originalPrice": 95,
+    "category": "Hoodies",
+    "badge": "Trending",
+    "rating": 4.9,
+    "reviewsCount": 180,
+    "image": "https://images.unsplash.com/photo-1556905055-8f358a7a47b2?q=80&w=800&auto=format&fit=crop",
+    "description": "Plush 450 GSM French Terry cotton hoodie with a double-layered hood and reinforced kangaroo pocket."
+  },
+  {
+    "id": 13,
+    "name": "Minimalist Full-Zip Hoodie",
+    "price": 82,
+    "category": "Hoodies",
+    "badge": "New",
+    "rating": 4.8,
+    "reviewsCount": 73,
+    "image": "https://images.unsplash.com/photo-1543163521-1bf539c55dd2?q=80&w=800&auto=format&fit=crop",
+    "description": "Tailored zip-through fleece hoodie featuring antique silver YKK hardware and hidden phone sleeve."
+  },
+  {
+    "id": 14,
+    "name": "Earthtone Boxy Hoodie",
     "price": 75,
-    "image": "https://images.unsplash.com/photo-1496202703211-aa28e9500c30?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-    "description": "Ultra-light sneakers designed for everyday mobility. Breathable and flexible design."
+    "category": "Hoodies",
+    "rating": 4.7,
+    "reviewsCount": 61,
+    "image": "https://images.unsplash.com/photo-1509967419530-da38b4704bc6?q=80&w=800&auto=format&fit=crop",
+    "description": "Garment-dyed earthy hue with a relaxed boxy cut, ribbed side gussets, and cozy brushed interior."
+  },
+  {
+    "id": 15,
+    "name": "Signature Oversized Hoodie",
+    "price": 85,
+    "originalPrice": 105,
+    "category": "Hoodies",
+    "badge": "Popular",
+    "rating": 4.9,
+    "reviewsCount": 112,
+    "image": "https://images.unsplash.com/photo-1578632767115-351597cf2477?q=80&w=800&auto=format&fit=crop",
+    "description": "Signature heavyweight street hoodie built to withstand seasons while keeping an impeccable shape."
+  },
+  {
+    "id": 16,
+    "name": "Urban Crossbody Sling Bag",
+    "price": 45,
+    "originalPrice": 55,
+    "category": "Accessories",
+    "badge": "Best Seller",
+    "rating": 4.8,
+    "reviewsCount": 142,
+    "image": "https://images.unsplash.com/photo-1553062407-98eeb64c6a62?q=80&w=800&auto=format&fit=crop",
+    "description": "Water-resistant Cordura nylon sling with quick-release magnetic buckle and modular compartments."
+  },
+  {
+    "id": 17,
+    "name": "Embroidered 6-Panel Cap",
+    "price": 28,
+    "category": "Accessories",
+    "rating": 4.7,
+    "reviewsCount": 88,
+    "image": "https://images.unsplash.com/photo-1588850561407-ed78c282e89b?q=80&w=800&auto=format&fit=crop",
+    "description": "Structured cotton twill strapback cap with clean micro-embroidery and adjustable brass closure."
+  },
+  {
+    "id": 18,
+    "name": "Heavy Canvas Daily Tote",
+    "price": 34,
+    "category": "Accessories",
+    "badge": "New",
+    "rating": 4.9,
+    "reviewsCount": 59,
+    "image": "https://images.unsplash.com/photo-1544816155-12df9643f363?q=80&w=800&auto=format&fit=crop",
+    "description": "Heavy-duty 16oz cotton canvas tote featuring internal zipper pocket and reinforced carry handles."
+  },
+  {
+    "id": 19,
+    "name": "Merino Wool Ribbed Beanie",
+    "price": 26,
+    "category": "Accessories",
+    "badge": "Sale",
+    "rating": 4.8,
+    "reviewsCount": 97,
+    "image": "https://images.unsplash.com/photo-1576871337622-98d48d1cf531?q=80&w=800&auto=format&fit=crop",
+    "description": "Ultra-soft 100% Merino wool ribbed knit beanie designed for warmth without itchiness."
   }
 ]

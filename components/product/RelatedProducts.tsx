@@ -1,57 +1,50 @@
+import ProductCard from "@/components/home/ProductCard";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import products from "@/data/products.json";
+import rawProducts from "@/data/products.json";
 import { Product } from "@/types/product";
-import Image from "next/image";
+import { ArrowRight } from "lucide-react";
 import Link from "next/link";
+
+const products = rawProducts as Product[];
 
 interface RelatedProductsProps {
   product: Product;
 }
 
 export default function RelatedProducts({ product }: RelatedProductsProps) {
+  // First match same category, then fallback to others
+  const sameCategory = products.filter(
+    (p) => p.id !== product.id && p.category === product.category
+  );
+  const otherItems = products.filter(
+    (p) => p.id !== product.id && p.category !== product.category
+  );
+  const relatedList = [...sameCategory, ...otherItems].slice(0, 4);
+
   return (
-    <div>
-      <div className="flex items-center justify-between mb-8">
-        <h2 className="text-2xl font-bold text-foreground">Related Products</h2>
-        <Button variant="ghost" asChild>
-          <Link href="/" className="text-primary hover:text-primary/80">
-            View All
+    <section className="pt-8 sm:pt-12 border-t border-border/60">
+      <div className="flex items-center justify-between mb-6">
+        <div>
+          <h2 className="text-xl sm:text-2xl font-bold text-foreground tracking-tight">
+            Related & Recommended
+          </h2>
+          <p className="text-xs text-muted-foreground mt-0.5">
+            More styles curated from the {product.category} collection.
+          </p>
+        </div>
+        <Button variant="ghost" size="sm" asChild className="text-xs gap-1 text-primary hover:text-primary/80">
+          <Link href={`/shop?category=${encodeURIComponent(product.category || "All")}`}>
+            <span>View All</span>
+            <ArrowRight className="h-3.5 w-3.5" />
           </Link>
         </Button>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-        {products
-          .filter((p) => p.id !== product.id)
-          .slice(0, 4)
-          .map((relatedProduct) => (
-            <Card
-              key={relatedProduct.id}
-              className="group overflow-hidden hover:shadow-lg transition-all duration-300"
-            >
-              <Link href={`/product/${relatedProduct.id}`}>
-                <div className="aspect-square overflow-hidden bg-muted">
-                  <Image
-                    src={relatedProduct.image}
-                    alt={relatedProduct.name}
-                    width={400}
-                    height={400}
-                    className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-                  />
-                </div>
-                <CardContent className="p-4">
-                  <h3 className="font-semibold text-foreground line-clamp-1 mb-2">
-                    {relatedProduct.name}
-                  </h3>
-                  <p className="text-lg font-bold text-primary">
-                    ${relatedProduct.price.toFixed(2)}
-                  </p>
-                </CardContent>
-              </Link>
-            </Card>
-          ))}
+      <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3.5 sm:gap-5">
+        {relatedList.map((rel) => (
+          <ProductCard key={rel.id} product={rel} />
+        ))}
       </div>
-    </div>
+    </section>
   );
 }
