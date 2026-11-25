@@ -102,7 +102,7 @@ export default function CheckoutPage() {
   // Order Confirmation Screen
   if (isCompleted && completedOrder) {
     const waText = `Hello BloomShop! I just placed order #${completedOrder.orderNumber} for a total of ${formatKES(completedOrder.total)}. Customer: ${completedOrder.customer.name}. Please confirm my shipment!`;
-    const waUrl = `https://wa.me/15551234567?text=${encodeURIComponent(waText)}`;
+    const waUrl = `https://wa.me/254716836551?text=${encodeURIComponent(waText)}`;
 
     return (
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16 max-w-3xl">

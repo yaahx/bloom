@@ -57,7 +57,7 @@ export default function Home() {
                   Bloom shop
                 </h3>
                 <p className="text-muted-foreground flex flex-wrap items-center gap-x-1.5 gap-y-0.5 mt-1">
-                  <span className="text-xs">123 Fashion Street, SoHo, New York, NY 10013</span>
+                  <span className="text-xs">Uhuru Street, Thika Town, Kenya</span>
                   <span className="text-xs">&bull;</span>
                   <span className="inline-flex items-center gap-1 text-[10px] sm:text-xs">
                     <Clock className="h-3 w-3 text-muted-foreground shrink-0" />
@@ -69,8 +69,8 @@ export default function Home() {
               {/* Embedded Google Map */}
               <div className="relative w-full h-[220px] sm:h-[280px] bg-muted/40">
                 <iframe
-                  title="Bloom shop Location"
-                  src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3023.6306296797505!2d-73.9997424!3d40.7228831!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x89c2598c199589d9%3A0x6b194fb8e96bfeb0!2sSoHo%2C%20New%20York%2C%20NY!5e0!3m2!1sen!2sus!4v1710000000000!5m2!1sen!2sus"
+                  title="Bloom shop Thika Location"
+                  src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3989.1554562217684!2d37.0693343!3d-1.0332801!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x182f4e8574d53cb1%3A0x6e9f196be1492ba2!2sThika%2C%20Kenya!5e0!3m2!1sen!2ske!4v1710000000000!5m2!1sen!2ske"
                   width="100%"
                   height="100%"
                   style={{ border: 0 }}

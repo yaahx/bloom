@@ -9,7 +9,7 @@ interface WhatsAppWidgetProps {
 }
 
 export default function WhatsAppWidget({
-  phoneNumber = "15551234567",
+  phoneNumber = "+254716836551",
   defaultMessage = "Hello BloomShop! I am interested in your products and would like to ask a question.",
 }: WhatsAppWidgetProps) {
   const [isOpen, setIsOpen] = useState(false);
@@ -34,10 +34,7 @@ export default function WhatsAppWidget({
             <X className="h-3.5 w-3.5" />
           </button>
           <div className="flex items-start gap-2.5 pr-4">
-            <span className="flex h-2.5 w-2.5 relative mt-1">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
-            </span>
+            <MessageCircle className="h-4 w-4 text-[#25D366] shrink-0 mt-0.5" />
             <div>
               <p className="text-xs font-semibold text-foreground">Need help or want to order?</p>
               <p className="text-[11px] text-muted-foreground mt-0.5">
@@ -63,11 +60,8 @@ export default function WhatsAppWidget({
         target="_blank"
         rel="noopener noreferrer"
         aria-label="Chat on WhatsApp"
-        className="group relative flex items-center justify-center w-14 h-14 rounded-full bg-[#25D366] text-white shadow-lg shadow-emerald-500/25 hover:shadow-emerald-500/40 hover:scale-105 active:scale-95 transition-all duration-300"
+        className="relative flex items-center justify-center w-14 h-14 rounded-full bg-[#25D366] text-white shadow-md hover:bg-[#20ba59] hover:shadow-lg transition-all duration-200"
       >
-        {/* Animated radar rings */}
-        <span className="absolute -inset-1 rounded-full bg-[#25D366] opacity-30 group-hover:animate-ping pointer-events-none" />
-
         {/* WhatsApp Official SVG Icon */}
         <svg
           className="w-7 h-7 fill-current relative z-10"

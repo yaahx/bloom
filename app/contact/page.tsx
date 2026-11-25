@@ -55,7 +55,7 @@ export default function Contact() {
     {
       icon: MessageSquare,
       title: "WhatsApp Chat",
-      details: ["+1 (555) 123-4567", "Live Chat & Sizing Support"],
+      details: ["+254 716 836 551", "Live Chat & Sizing Support"],
       description: "Fastest response time on WhatsApp",
     },
     {
@@ -67,14 +67,14 @@ export default function Contact() {
     {
       icon: Phone,
       title: "Call Us",
-      details: ["+1 (555) 123-4567", "+1 (555) 987-6543"],
-      description: "Mon-Fri from 8am to 5pm",
+      details: ["+254 716 836 551"],
+      description: "Mon-Sat from 8am to 8pm",
     },
     {
       icon: MapPin,
       title: "Visit Us",
-      details: ["123 Fashion Street", "Style City, SC 12345"],
-      description: "Come say hello at our showroom",
+      details: ["Uhuru Street", "Thika Town, Kenya"],
+      description: "Come visit our store in Thika",
     },
     {
       icon: Clock,

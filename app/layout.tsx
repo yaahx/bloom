@@ -32,7 +32,7 @@ export default function RootLayout({
           <Header />
           <main className="flex-grow">{children}</main>
           <Footer />
-          <WhatsAppWidget phoneNumber="15551234567" />
+          <WhatsAppWidget phoneNumber="+254716836551" />
         </CartProvider>
       </body>
     </html>

@@ -93,7 +93,7 @@ export default function ProductDetailPage() {
     }
   };
 
-  const whatsappInquiryUrl = `https://wa.me/15551234567?text=${encodeURIComponent(
+  const whatsappInquiryUrl = `https://wa.me/254716836551?text=${encodeURIComponent(
     `Hello BloomShop! I am interested in ordering "${product.name}" (${formatKES(product.price)}). Do you have it in stock?`
   )}`;
 
