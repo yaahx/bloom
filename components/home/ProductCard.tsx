@@ -1,12 +1,10 @@
 "use client";
 
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { useCart } from "@/context/CartContext";
 import { cn } from "@/lib/utils";
 import { Product } from "@/types/product";
-import { Check, Heart, ShoppingBag, Star } from "lucide-react";
+import { Check, ShoppingBag, Star } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
@@ -17,16 +15,18 @@ interface ProductCardProps {
 }
 
 export default function ProductCard({ product, className }: ProductCardProps) {
-  const [isLiked, setIsLiked] = useState(false);
   const [imageError, setImageError] = useState(false);
   const [isAdding, setIsAdding] = useState(false);
   const [justAdded, setJustAdded] = useState(false);
 
   const { addToCart } = useCart();
+  const isSoldOut = Boolean(product.isSoldOut);
 
   const handleAddToCart = async (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
+
+    if (isSoldOut) return;
 
     setIsAdding(true);
     await new Promise((resolve) => setTimeout(resolve, 250));
@@ -44,57 +44,55 @@ export default function ProductCard({ product, className }: ProductCardProps) {
     setTimeout(() => setJustAdded(false), 1800);
   };
 
-  const handleToggleLike = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setIsLiked(!isLiked);
-  };
+  const discountPercent =
+    product.originalPrice && product.originalPrice > product.price
+      ? Math.round(
+          ((product.originalPrice - product.price) / product.originalPrice) * 100
+        )
+      : null;
 
   return (
     <Card
       className={cn(
         "group relative overflow-hidden bg-card border-border/70 hover:border-primary/40 hover:shadow-md transition-all duration-300 rounded-xl flex flex-col h-full",
+        isSoldOut && "opacity-90",
         className
       )}
     >
       {/* Top Media Area */}
       <div className="relative aspect-[4/5] w-full overflow-hidden bg-muted/40">
-        {/* Badges */}
-        <div className="absolute top-2.5 left-2.5 z-10 flex flex-col gap-1 pointer-events-none">
-          {product.badge && (
-            <Badge
-              variant="default"
-              className={cn(
-                "text-[10px] px-2 py-0.5 font-medium uppercase tracking-wider rounded-md shadow-xs",
-                product.badge.toLowerCase() === "sale"
-                  ? "bg-red-500 text-white hover:bg-red-500"
-                  : product.badge.toLowerCase() === "new"
-                  ? "bg-emerald-600 text-white hover:bg-emerald-600"
-                  : "bg-primary text-primary-foreground hover:bg-primary"
-              )}
-            >
-              {product.badge}
-            </Badge>
-          )}
-          {product.originalPrice && product.originalPrice > product.price && (
-            <span className="text-[10px] px-1.5 py-0.5 font-bold bg-foreground/80 text-background rounded-md backdrop-blur-xs">
-              -{Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)}%
+        {/* Sold Out Indication Badge */}
+        {isSoldOut && (
+          <div className="absolute top-2.5 left-2.5 z-10">
+            <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md bg-neutral-900/90 text-white dark:bg-white/95 dark:text-neutral-950 shadow-sm backdrop-blur-xs">
+              Sold Out
             </span>
-          )}
-        </div>
+          </div>
+        )}
 
-        {/* Wishlist Button */}
-        <button
-          type="button"
-          onClick={handleToggleLike}
-          aria-label={isLiked ? "Remove from wishlist" : "Add to wishlist"}
-          className={cn(
-            "absolute top-2.5 right-2.5 z-10 p-1.5 rounded-full transition-all duration-200 bg-background/85 backdrop-blur-md shadow-xs hover:bg-background hover:scale-110",
-            isLiked ? "text-destructive" : "text-muted-foreground hover:text-foreground"
-          )}
-        >
-          <Heart className={cn("h-4 w-4", isLiked && "fill-current text-red-500")} />
-        </button>
+        {/* Top-Right Quick Add-to-Bag Icon Button (Replaces Heart Button) */}
+        {!isSoldOut && (
+          <button
+            type="button"
+            onClick={handleAddToCart}
+            disabled={isAdding}
+            aria-label={`Add ${product.name} to cart`}
+            className={cn(
+              "absolute top-2.5 right-2.5 z-10 p-2 rounded-full transition-all duration-200 shadow-xs hover:scale-110 active:scale-95",
+              justAdded
+                ? "bg-emerald-600 text-white"
+                : "bg-background/85 backdrop-blur-md text-foreground hover:bg-primary hover:text-primary-foreground"
+            )}
+          >
+            {isAdding ? (
+              <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
+            ) : justAdded ? (
+              <Check className="h-4 w-4" />
+            ) : (
+              <ShoppingBag className="h-4 w-4" />
+            )}
+          </button>
+        )}
 
         {/* Clickable Image Link */}
         <Link
@@ -109,7 +107,10 @@ export default function ProductCard({ product, className }: ProductCardProps) {
               width={350}
               height={430}
               sizes="(max-width: 640px) 180px, (max-width: 1024px) 240px, 280px"
-              className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+              className={cn(
+                "w-full h-full object-cover transition-transform duration-500 group-hover:scale-105",
+                isSoldOut && "grayscale-[40%] opacity-80"
+              )}
               onError={() => setImageError(true)}
             />
           ) : (
@@ -144,45 +145,33 @@ export default function ProductCard({ product, className }: ProductCardProps) {
           </Link>
         </div>
 
-        {/* Pricing & Add to Cart Action */}
+        {/* Pricing Area: Current Price on Left, Strikethrough Discount on Right */}
         <div className="flex items-center justify-between pt-1 border-t border-border/40 mt-auto">
-          <div className="flex items-baseline gap-1.5">
+          <div className="flex items-baseline gap-1">
             <span className="text-base font-bold text-foreground">
               ${product.price.toFixed(2)}
             </span>
-            {product.originalPrice && product.originalPrice > product.price && (
-              <span className="text-xs text-muted-foreground line-through">
-                ${product.originalPrice.toFixed(2)}
-              </span>
-            )}
           </div>
 
-          <Button
-            size="sm"
-            onClick={handleAddToCart}
-            disabled={isAdding}
-            aria-label={`Add ${product.name} to cart`}
-            className={cn(
-              "h-8 px-2.5 rounded-lg text-xs font-medium transition-all duration-200",
-              justAdded
-                ? "bg-emerald-600 text-white hover:bg-emerald-600"
-                : "bg-primary text-primary-foreground hover:bg-primary/90"
-            )}
-          >
-            {isAdding ? (
-              <div className="w-3.5 h-3.5 border-2 border-current border-t-transparent rounded-full animate-spin" />
-            ) : justAdded ? (
-              <span className="flex items-center gap-1">
-                <Check className="h-3.5 w-3.5" />
-                <span>Added</span>
+          {/* Where the Add to Cart button was: shows discounted amount or sold out */}
+          <div className="flex items-center gap-1.5 text-right">
+            {isSoldOut ? (
+              <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
+                Out of Stock
               </span>
-            ) : (
-              <span className="flex items-center gap-1">
-                <ShoppingBag className="h-3.5 w-3.5" />
-                <span>Add</span>
-              </span>
-            )}
-          </Button>
+            ) : product.originalPrice && product.originalPrice > product.price ? (
+              <div className="flex items-center gap-1">
+                <span className="text-xs text-muted-foreground line-through">
+                  ${product.originalPrice.toFixed(2)}
+                </span>
+                {discountPercent && (
+                  <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-md bg-destructive/10 text-destructive">
+                    -{discountPercent}%
+                  </span>
+                )}
+              </div>
+            ) : null}
+          </div>
         </div>
       </CardContent>
     </Card>

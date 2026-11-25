@@ -9,14 +9,12 @@ import ProductCard from "./ProductCard";
 
 interface CategoryCarouselProps {
   title: string;
-  subtitle?: string;
   categoryKey: string;
   products: Product[];
 }
 
 export default function CategoryCarousel({
   title,
-  subtitle,
   categoryKey,
   products,
 }: CategoryCarouselProps) {
@@ -51,24 +49,12 @@ export default function CategoryCarousel({
   if (!products || products.length === 0) return null;
 
   return (
-    <section className="py-6 sm:py-8">
-      {/* Category Header */}
-      <div className="flex items-end justify-between mb-4 sm:mb-6">
-        <div>
-          <div className="flex items-center gap-2">
-            <h2 className="text-xl sm:text-2xl font-bold text-foreground tracking-tight">
-              {title}
-            </h2>
-            <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-primary/10 text-primary">
-              {products.length}
-            </span>
-          </div>
-          {subtitle && (
-            <p className="text-xs sm:text-sm text-muted-foreground mt-0.5">
-              {subtitle}
-            </p>
-          )}
-        </div>
+    <section className="py-4 sm:py-6">
+      {/* Category Header (Clean title with no count and no subtitle) */}
+      <div className="flex items-center justify-between mb-3.5 sm:mb-5">
+        <h2 className="text-xl sm:text-2xl font-bold text-foreground tracking-tight">
+          {title}
+        </h2>
 
         <div className="flex items-center gap-2">
           {/* Scroll Nav Buttons */}

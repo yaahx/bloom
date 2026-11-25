@@ -41,6 +41,7 @@
     "originalPrice": 145,
     "category": "Shoes",
     "badge": "New",
+    "isSoldOut": true,
     "rating": 4.9,
     "reviewsCount": 42,
     "image": "https://images.unsplash.com/photo-1512374382149-233c42b6a83b?q=80&w=735&auto=format&fit=crop",

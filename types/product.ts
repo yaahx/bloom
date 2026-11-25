@@ -9,4 +9,5 @@ export interface Product {
   badge?: string;
   rating?: number;
   reviewsCount?: number;
+  isSoldOut?: boolean;
 }
