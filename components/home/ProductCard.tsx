@@ -4,7 +4,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { useCart } from "@/context/CartContext";
 import { cn, formatKES } from "@/lib/utils";
 import { Product } from "@/types/product";
-import { Check, ShoppingBag, Star } from "lucide-react";
+import { Check, Plus, ShoppingBag, Star } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
@@ -78,10 +78,10 @@ export default function ProductCard({ product, className }: ProductCardProps) {
             disabled={isAdding}
             aria-label={`Add ${product.name} to cart`}
             className={cn(
-              "absolute top-2.5 right-2.5 z-10 p-2 rounded-full transition-all duration-200 shadow-xs hover:scale-110 active:scale-95",
+              "group/btn absolute top-2.5 right-2.5 z-10 w-8 h-8 rounded-full flex items-center justify-center transition-all duration-200 shadow-xs hover:scale-110 active:scale-95",
               justAdded
                 ? "bg-emerald-600 text-white"
-                : "bg-background/85 backdrop-blur-md text-foreground hover:bg-primary hover:text-primary-foreground"
+                : "bg-background/90 backdrop-blur-md text-foreground hover:bg-primary hover:text-primary-foreground"
             )}
           >
             {isAdding ? (
@@ -89,7 +89,12 @@ export default function ProductCard({ product, className }: ProductCardProps) {
             ) : justAdded ? (
               <Check className="h-4 w-4" />
             ) : (
-              <ShoppingBag className="h-4 w-4" />
+              <>
+                <ShoppingBag className="h-4 w-4" />
+                <span className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full bg-primary text-primary-foreground flex items-center justify-center border border-background shadow-xs group-hover/btn:border-primary-foreground">
+                  <Plus className="h-2.5 w-2.5 stroke-[3.5]" />
+                </span>
+              </>
             )}
           </button>
         )}

@@ -1,7 +1,6 @@
 "use client";
 
 import ProductCard from "@/components/home/ProductCard";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import defaultProducts from "@/data/products.json";
@@ -27,7 +26,6 @@ export default function ShopClient() {
   const [products, setProducts] = useState<Product[]>(defaultProducts as Product[]);
   const [selectedCategory, setSelectedCategory] = useState<string>(initialCategory);
   const [searchQuery, setSearchQuery] = useState<string>(initialSearch);
-  const [selectedBadge, setSelectedBadge] = useState<string>("All");
   const [maxPrice, setMaxPrice] = useState<number>(6000);
   const [sortBy, setSortBy] = useState<string>("featured");
   const [isMobileFiltersOpen, setIsMobileFiltersOpen] = useState<boolean>(false);
@@ -60,7 +58,6 @@ export default function ShopClient() {
   }, [searchParams]);
 
   const categories = ["All", "Shoes", "T-Shirts", "Hoodies", "Accessories"];
-  const badges = ["All", "New", "Trending", "Sale", "Popular"];
 
   const filteredProducts = useMemo(() => {
     return products
@@ -77,10 +74,6 @@ export default function ShopClient() {
           const matchesCat = p.category?.toLowerCase().includes(q);
           if (!matchesName && !matchesDesc && !matchesCat) return false;
         }
-        // Badge filter
-        if (selectedBadge !== "All" && p.badge !== selectedBadge) {
-          return false;
-        }
         // Price filter
         if (p.price > maxPrice) {
           return false;
@@ -93,12 +86,11 @@ export default function ShopClient() {
         if (sortBy === "rating") return (b.rating || 0) - (a.rating || 0);
         return a.id - b.id; // featured / default
       });
-  }, [products, selectedCategory, searchQuery, selectedBadge, maxPrice, sortBy]);
+  }, [products, selectedCategory, searchQuery, maxPrice, sortBy]);
 
   const resetFilters = () => {
     setSelectedCategory("All");
     setSearchQuery("");
-    setSelectedBadge("All");
     setMaxPrice(6000);
     setSortBy("featured");
   };
@@ -106,7 +98,6 @@ export default function ShopClient() {
   const hasActiveFilters =
     selectedCategory !== "All" ||
     searchQuery !== "" ||
-    selectedBadge !== "All" ||
     maxPrice < 6000 ||
     sortBy !== "featured";
 
@@ -117,9 +108,6 @@ export default function ShopClient() {
         <h1 className="text-2xl sm:text-4xl font-extrabold text-foreground tracking-tight">
           Shop All Collections
         </h1>
-        <p className="text-xs sm:text-sm text-muted-foreground mt-1">
-          Explore our complete range of premium footwear, streetwear apparel, and daily essentials.
-        </p>
       </div>
 
       {/* Filter / Sort Control Bar for Mobile & Desktop */}
@@ -260,29 +248,6 @@ export default function ShopClient() {
               <span>KES 6,000+</span>
             </div>
           </div>
-
-          {/* Badge Filter */}
-          <div className="space-y-2 pt-2 border-t border-border/40">
-            <h3 className="text-xs font-semibold text-foreground uppercase tracking-wider">
-              Tag / Badge
-            </h3>
-            <div className="flex flex-wrap gap-1.5">
-              {badges.map((b) => (
-                <Badge
-                  key={b}
-                  variant={selectedBadge === b ? "default" : "outline"}
-                  onClick={() => setSelectedBadge(b)}
-                  className={`cursor-pointer text-[10px] transition-all ${
-                    selectedBadge === b
-                      ? "bg-primary text-primary-foreground"
-                      : "hover:bg-muted"
-                  }`}
-                >
-                  {b}
-                </Badge>
-              ))}
-            </div>
-          </div>
         </aside>
 
         {/* Product Grid Area */}
@@ -306,15 +271,6 @@ export default function ShopClient() {
                   <X
                     className="h-3 w-3 cursor-pointer text-muted-foreground hover:text-foreground"
                     onClick={() => setSearchQuery("")}
-                  />
-                </span>
-              )}
-              {selectedBadge !== "All" && (
-                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-card border border-border text-[11px]">
-                  Tag: {selectedBadge}
-                  <X
-                    className="h-3 w-3 cursor-pointer text-muted-foreground hover:text-foreground"
-                    onClick={() => setSelectedBadge("All")}
                   />
                 </span>
               )}
