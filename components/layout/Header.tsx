@@ -5,12 +5,10 @@ import AdminAuthModal from "@/components/admin/AdminAuthModal";
 import { useCart } from "@/context/CartContext";
 import { Product } from "@/types/product";
 import {
-  Lock,
   LogOut,
   Menu,
   Plus,
   Search,
-  ShieldCheck,
   ShoppingCart,
   X,
 } from "lucide-react";
@@ -122,30 +120,23 @@ export default function Header() {
       {isAdminLoggedIn && (
         <div className="bg-foreground text-background text-xs py-1.5 px-4">
           <div className="container mx-auto flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <ShieldCheck className="h-4 w-4 text-emerald-400" />
-              <span className="font-medium">
-                Admin Mode Active: <span className="opacity-80">{adminEmail}</span>
-              </span>
-            </div>
-            <div className="flex items-center gap-2">
-              <button
-                type="button"
-                onClick={() => setIsAddProductOpen(true)}
-                className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md bg-primary text-primary-foreground font-semibold hover:bg-primary/90 transition-colors"
-              >
-                <Plus className="h-3 w-3" />
-                <span>Add Product</span>
-              </button>
-              <button
-                type="button"
-                onClick={handleAdminLogout}
-                className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-red-400 hover:text-red-300 hover:bg-white/10 transition-colors"
-              >
-                <LogOut className="h-3 w-3" />
-                <span>Logout</span>
-              </button>
-            </div>
+            <button
+              type="button"
+              onClick={() => setIsAddProductOpen(true)}
+              className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-primary text-primary-foreground font-semibold hover:bg-primary/90 transition-colors"
+            >
+              <Plus className="h-3.5 w-3.5" />
+              <span>Add Product</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={handleAdminLogout}
+              className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-red-400 hover:text-red-300 hover:bg-white/10 transition-colors"
+            >
+              <LogOut className="h-3.5 w-3.5" />
+              <span>Logout</span>
+            </button>
           </div>
         </div>
       )}
@@ -252,9 +243,8 @@ export default function Header() {
                     size="sm"
                     variant="ghost"
                     onClick={() => setIsAdminAuthOpen(true)}
-                    className="text-xs h-8 text-muted-foreground hover:text-foreground gap-1.5 font-medium"
+                    className="text-xs h-8 text-muted-foreground hover:text-foreground font-medium"
                   >
-                    <Lock className="h-3.5 w-3.5" />
                     <span>Sign In</span>
                   </Button>
                 )}
@@ -342,7 +332,7 @@ export default function Header() {
                       }}
                       className="w-full text-red-500 hover:text-red-600 text-xs"
                     >
-                      Logout Admin
+                      Logout
                     </Button>
                   </>
                 ) : (
@@ -353,10 +343,9 @@ export default function Header() {
                       closeMobileMenu();
                       setIsAdminAuthOpen(true);
                     }}
-                    className="w-full text-xs gap-1.5"
+                    className="w-full text-xs"
                   >
-                    <Lock className="h-3.5 w-3.5" />
-                    <span>Sign In (Admin Access)</span>
+                    <span>Sign In</span>
                   </Button>
                 )}
               </div>
