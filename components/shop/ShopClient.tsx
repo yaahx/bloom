@@ -30,23 +30,42 @@ export default function ShopClient() {
   const [sortBy, setSortBy] = useState<string>("featured");
   const [isMobileFiltersOpen, setIsMobileFiltersOpen] = useState<boolean>(false);
 
-  // Sync products with local storage if admin added products
+  const [categories, setCategories] = useState<string[]>([
+    "All",
+    "Shoes",
+    "T-Shirts",
+    "Hoodies",
+    "Accessories",
+  ]);
+
+  // Sync products and categories with local storage if admin added products or categories
   useEffect(() => {
-    const loadProducts = () => {
+    const loadData = () => {
       try {
         const stored = localStorage.getItem("bloom_custom_products");
         if (stored) {
           const customList: Product[] = JSON.parse(stored);
           setProducts([...customList, ...(defaultProducts as Product[])]);
         }
+
+        const storedCats = localStorage.getItem("bloom_custom_categories");
+        if (storedCats) {
+          const customCats: string[] = JSON.parse(storedCats);
+          setCategories([
+            "All",
+            ...Array.from(
+              new Set(["Shoes", "T-Shirts", "Hoodies", "Accessories", ...customCats])
+            ),
+          ]);
+        }
       } catch {
         // ignore
       }
     };
-    loadProducts();
+    loadData();
 
-    window.addEventListener("storage", loadProducts);
-    return () => window.removeEventListener("storage", loadProducts);
+    window.addEventListener("storage", loadData);
+    return () => window.removeEventListener("storage", loadData);
   }, []);
 
   // Update from URL params
@@ -56,8 +75,6 @@ export default function ShopClient() {
     const q = searchParams.get("search");
     if (q) setSearchQuery(q);
   }, [searchParams]);
-
-  const categories = ["All", "Shoes", "T-Shirts", "Hoodies", "Accessories"];
 
   const filteredProducts = useMemo(() => {
     return products

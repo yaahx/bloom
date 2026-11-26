@@ -1,6 +1,5 @@
 "use client";
 
-import AddProductModal from "@/components/admin/AddProductModal";
 import AdminAuthModal from "@/components/admin/AdminAuthModal";
 import { useCart } from "@/context/CartContext";
 import { Product } from "@/types/product";
@@ -29,7 +28,6 @@ export default function Header() {
 
   // Admin Portal state
   const [isAdminAuthOpen, setIsAdminAuthOpen] = useState(false);
-  const [isAddProductOpen, setIsAddProductOpen] = useState(false);
   const [isAdminLoggedIn, setIsAdminLoggedIn] = useState(false);
   const [adminEmail, setAdminEmail] = useState("");
 
@@ -120,14 +118,13 @@ export default function Header() {
       {isAdminLoggedIn && (
         <div className="bg-foreground text-background text-xs py-1.5 px-4">
           <div className="container mx-auto flex items-center justify-between">
-            <button
-              type="button"
-              onClick={() => setIsAddProductOpen(true)}
+            <Link
+              href="/admin"
               className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-primary text-primary-foreground font-semibold hover:bg-primary/90 transition-colors"
             >
               <Plus className="h-3.5 w-3.5" />
               <span>Add Product</span>
-            </button>
+            </Link>
 
             <button
               type="button"
@@ -229,15 +226,16 @@ export default function Header() {
               {/* Sign In (Admin Access) Button */}
               <div className="hidden sm:flex items-center">
                 {isAdminLoggedIn ? (
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => setIsAddProductOpen(true)}
-                    className="text-xs h-8 border-primary/40 text-primary hover:bg-primary/10 gap-1.5 font-medium"
-                  >
-                    <Plus className="h-3.5 w-3.5" />
-                    <span>Add Product</span>
-                  </Button>
+                  <Link href="/admin">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="text-xs h-8 border-primary/40 text-primary hover:bg-primary/10 gap-1.5 font-medium"
+                    >
+                      <Plus className="h-3.5 w-3.5" />
+                      <span>Add Product</span>
+                    </Button>
+                  </Link>
                 ) : (
                   <Button
                     size="sm"
@@ -312,17 +310,15 @@ export default function Header() {
               <div className="pt-3 border-t border-border/60 flex flex-col gap-2">
                 {isAdminLoggedIn ? (
                   <>
-                    <Button
-                      size="sm"
-                      onClick={() => {
-                        closeMobileMenu();
-                        setIsAddProductOpen(true);
-                      }}
-                      className="w-full bg-primary text-primary-foreground text-xs"
-                    >
-                      <Plus className="h-3.5 w-3.5 mr-1" />
-                      Add New Product
-                    </Button>
+                    <Link href="/admin" onClick={closeMobileMenu} className="w-full">
+                      <Button
+                        size="sm"
+                        className="w-full bg-primary text-primary-foreground text-xs"
+                      >
+                        <Plus className="h-3.5 w-3.5 mr-1" />
+                        Add New Product
+                      </Button>
+                    </Link>
                     <Button
                       size="sm"
                       variant="ghost"
@@ -359,16 +355,6 @@ export default function Header() {
         isOpen={isAdminAuthOpen}
         onClose={() => setIsAdminAuthOpen(false)}
         onLoginSuccess={handleAdminLogin}
-      />
-
-      {/* Add Product Modal */}
-      <AddProductModal
-        isOpen={isAddProductOpen}
-        onClose={() => setIsAddProductOpen(false)}
-        onProductAdded={(newProduct: Product) => {
-          // If on the shop or home page, trigger storage event so listeners refresh
-          window.dispatchEvent(new Event("storage"));
-        }}
       />
     </>
   );
