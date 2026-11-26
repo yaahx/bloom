@@ -1,10 +1,8 @@
 "use client";
 
-import Features from "@/components/product/Features";
 import ProductBreadcrumb from "@/components/product/ProductBreadcrumb";
 import ProductNotFound from "@/components/product/ProductNotFound";
 import RelatedProducts from "@/components/product/RelatedProducts";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { useCart } from "@/context/CartContext";
@@ -13,14 +11,13 @@ import { formatKES } from "@/lib/utils";
 import { Product } from "@/types/product";
 import {
   Check,
-  Heart,
+  ChevronLeft,
+  ChevronRight,
   MessageCircle,
   Minus,
   Plus,
-  Share2,
   ShoppingBag,
   Star,
-  Truck,
 } from "lucide-react";
 import Image from "next/image";
 import { useParams, useRouter } from "next/navigation";
@@ -37,7 +34,11 @@ export default function ProductDetailPage() {
   const [quantity, setQuantity] = useState(1);
   const [isAdding, setIsAdding] = useState(false);
   const [justAdded, setJustAdded] = useState(false);
-  const [isLiked, setIsLiked] = useState(false);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+
+  useEffect(() => {
+    setCurrentImageIndex(0);
+  }, [productId]);
 
   useEffect(() => {
     try {
@@ -56,6 +57,23 @@ export default function ProductDetailPage() {
   if (!product) {
     return <ProductNotFound />;
   }
+
+  const productImages =
+    product.images && product.images.length > 0
+      ? product.images
+      : [product.image];
+
+  const handlePrevImage = () => {
+    setCurrentImageIndex((prev) =>
+      prev === 0 ? productImages.length - 1 : prev - 1
+    );
+  };
+
+  const handleNextImage = () => {
+    setCurrentImageIndex((prev) =>
+      prev === productImages.length - 1 ? 0 : prev + 1
+    );
+  };
 
   const handleAddToCart = async () => {
     setIsAdding(true);
@@ -102,26 +120,85 @@ export default function ProductDetailPage() {
       <ProductBreadcrumb />
 
       <div className="grid lg:grid-cols-2 gap-8 lg:gap-14 mb-14">
-        {/* Product Media Area */}
+        {/* Product Media Area with Carousel */}
         <div className="space-y-4">
           <div className="w-full max-w-lg mx-auto">
-            <div className="relative aspect-square sm:aspect-[4/5] rounded-2xl overflow-hidden bg-muted/40 border border-border shadow-md">
-              {product.badge && (
-                <div className="absolute top-4 left-4 z-10">
-                  <Badge className="bg-primary text-primary-foreground uppercase text-xs tracking-wider px-2.5 py-1">
-                    {product.badge}
-                  </Badge>
-                </div>
-              )}
+            <div className="group/carousel relative aspect-square sm:aspect-[4/5] rounded-2xl overflow-hidden bg-muted/40 border border-border shadow-md">
               <Image
-                src={product.image}
-                alt={product.name}
+                src={productImages[currentImageIndex] || product.image}
+                alt={`${product.name} - image ${currentImageIndex + 1}`}
                 fill
                 priority
                 sizes="(max-width: 768px) 100vw, 550px"
-                className="object-cover"
+                className="object-cover transition-opacity duration-300"
               />
+
+              {/* Carousel Navigation Arrows */}
+              {productImages.length > 1 && (
+                <>
+                  <button
+                    type="button"
+                    onClick={handlePrevImage}
+                    aria-label="Previous image"
+                    className="absolute left-3 top-1/2 -translate-y-1/2 z-10 w-9 h-9 rounded-full bg-background/85 backdrop-blur-md text-foreground flex items-center justify-center border border-border shadow-md hover:bg-background hover:scale-105 active:scale-95 transition-all cursor-pointer"
+                  >
+                    <ChevronLeft className="h-5 w-5" />
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={handleNextImage}
+                    aria-label="Next image"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 z-10 w-9 h-9 rounded-full bg-background/85 backdrop-blur-md text-foreground flex items-center justify-center border border-border shadow-md hover:bg-background hover:scale-105 active:scale-95 transition-all cursor-pointer"
+                  >
+                    <ChevronRight className="h-5 w-5" />
+                  </button>
+
+                  {/* Dot Indicators */}
+                  <div className="absolute bottom-3 left-1/2 -translate-x-1/2 z-10 flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-background/80 backdrop-blur-md border border-border/60 shadow-xs">
+                    {productImages.map((_, idx) => (
+                      <button
+                        key={idx}
+                        type="button"
+                        onClick={() => setCurrentImageIndex(idx)}
+                        aria-label={`Go to image ${idx + 1}`}
+                        className={`transition-all rounded-full cursor-pointer ${
+                          currentImageIndex === idx
+                            ? "w-4 h-1.5 bg-primary"
+                            : "w-1.5 h-1.5 bg-muted-foreground/40 hover:bg-foreground/60"
+                        }`}
+                      />
+                    ))}
+                  </div>
+                </>
+              )}
             </div>
+
+            {/* Thumbnail Strip (if multiple images) */}
+            {productImages.length > 1 && (
+              <div className="flex items-center gap-2 overflow-x-auto pt-2 pb-1">
+                {productImages.map((img, idx) => (
+                  <button
+                    key={idx}
+                    type="button"
+                    onClick={() => setCurrentImageIndex(idx)}
+                    className={`relative w-16 h-16 sm:w-20 sm:h-20 rounded-xl overflow-hidden border-2 transition-all shrink-0 cursor-pointer ${
+                      currentImageIndex === idx
+                        ? "border-primary ring-2 ring-primary/20"
+                        : "border-border hover:border-muted-foreground/40 opacity-70 hover:opacity-100"
+                    }`}
+                  >
+                    <Image
+                      src={img}
+                      alt={`Thumbnail ${idx + 1}`}
+                      fill
+                      sizes="80px"
+                      className="object-cover"
+                    />
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
         </div>
 
@@ -254,23 +331,8 @@ export default function ProductDetailPage() {
               <span>Inquire / Order Instantly via WhatsApp</span>
             </a>
           </div>
-
-          {/* Value Highlights */}
-          <div className="pt-2 text-xs text-muted-foreground space-y-1.5 border-t border-border/60">
-            <div className="flex items-center gap-2">
-              <Truck className="h-3.5 w-3.5 text-primary" />
-              <span>Complimentary shipping on orders over $50</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <Check className="h-3.5 w-3.5 text-emerald-600" />
-              <span>Authentic quality guarantee & 30-day returns</span>
-            </div>
-          </div>
         </div>
       </div>
-
-      {/* Feature Badges */}
-      <Features />
 
       {/* Related Products Section */}
       <RelatedProducts product={product} />

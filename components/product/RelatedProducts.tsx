@@ -26,11 +26,8 @@ export default function RelatedProducts({ product }: RelatedProductsProps) {
       <div className="flex items-center justify-between mb-6">
         <div>
           <h2 className="text-xl sm:text-2xl font-bold text-foreground tracking-tight">
-            Related & Recommended
+            Related
           </h2>
-          <p className="text-xs text-muted-foreground mt-0.5">
-            More styles curated from the {product.category} collection.
-          </p>
         </div>
         <Button variant="ghost" size="sm" asChild className="text-xs gap-1 text-primary hover:text-primary/80">
           <Link href={`/shop?category=${encodeURIComponent(product.category || "All")}`}>

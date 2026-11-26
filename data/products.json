@@ -9,6 +9,11 @@
     "rating": 4.8,
     "reviewsCount": 124,
     "image": "https://images.unsplash.com/photo-1579338559194-a162d19bf842?q=80&w=687&auto=format&fit=crop",
+    "images": [
+      "https://images.unsplash.com/photo-1579338559194-a162d19bf842?q=80&w=687&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1542291026-7eec264c27ff?q=80&w=800&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1608667508764-33cf0726b13a?q=80&w=880&auto=format&fit=crop"
+    ],
     "description": "Lightweight running sneakers designed for speed and comfort. Breathable mesh upper with high-traction rubber sole."
   },
   {
@@ -21,6 +26,11 @@
     "rating": 4.9,
     "reviewsCount": 89,
     "image": "https://images.unsplash.com/photo-1608667508764-33cf0726b13a?q=80&w=880&auto=format&fit=crop",
+    "images": [
+      "https://images.unsplash.com/photo-1608667508764-33cf0726b13a?q=80&w=880&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1552346154-21d32810aba3?q=80&w=800&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1595950653106-6c9ebd614d3a?q=80&w=800&auto=format&fit=crop"
+    ],
     "description": "Minimalist streetwear sneakers built with premium leather overlays and responsive cushioned insoles."
   },
   {
@@ -77,6 +87,10 @@
     "rating": 4.9,
     "reviewsCount": 210,
     "image": "https://images.unsplash.com/photo-1521572267360-ee0c2909d518?q=80&w=800&auto=format&fit=crop",
+    "images": [
+      "https://images.unsplash.com/photo-1521572267360-ee0c2909d518?q=80&w=800&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1583743814966-8936f5b7be1a?q=80&w=800&auto=format&fit=crop"
+    ],
     "description": "Premium 240 GSM combed cotton t-shirt with a relaxed drop-shoulder cut and durable ribbed collar."
   },
   {
