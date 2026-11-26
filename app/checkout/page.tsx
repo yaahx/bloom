@@ -1,6 +1,5 @@
 "use client";
 
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -10,7 +9,6 @@ import { useCart } from "@/context/CartContext";
 import { formatKES } from "@/lib/utils";
 import {
   ArrowLeft,
-  CheckCircle2,
   Lock,
   MessageCircle,
   Truck,
@@ -98,14 +96,6 @@ export default function CheckoutPage() {
     return (
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16 max-w-3xl">
         <div className="bg-card border border-border shadow-lg rounded-2xl p-6 sm:p-10 text-center animate-in zoom-in-95 duration-300">
-          <div className="w-16 h-16 bg-emerald-500/10 text-emerald-600 rounded-full flex items-center justify-center mx-auto mb-4">
-            <CheckCircle2 className="h-10 w-10" />
-          </div>
-
-          <Badge variant="outline" className="text-xs uppercase tracking-wider mb-2 font-semibold">
-            Order Confirmed
-          </Badge>
-
           <h1 className="text-2xl sm:text-3xl font-extrabold text-foreground tracking-tight">
             Thank you, {completedOrder.customer.name.split(" ")[0]}!
           </h1>
