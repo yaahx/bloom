@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { useCart } from "@/context/CartContext";
 import { formatKES } from "@/lib/utils";
-import { CreditCard, Heart, Shield, Truck } from "lucide-react";
+import { CreditCard, Heart, Shield } from "lucide-react";
 import Link from "next/link";
 
 export default function OrderSummary() {
@@ -68,10 +68,6 @@ export default function OrderSummary() {
           <div className="flex items-center gap-3 text-sm text-muted-foreground">
             <Shield className="h-4 w-4 text-green-500" />
             <span>Secure SSL checkout</span>
-          </div>
-          <div className="flex items-center gap-3 text-sm text-muted-foreground">
-            <Truck className="h-4 w-4 text-blue-500" />
-            <span>Free returns within 30 days</span>
           </div>
           <div className="flex items-center gap-3 text-sm text-muted-foreground">
             <Heart className="h-4 w-4 text-red-500" />

@@ -10,13 +10,9 @@ import { useCart } from "@/context/CartContext";
 import { formatKES } from "@/lib/utils";
 import {
   ArrowLeft,
-  Banknote,
   CheckCircle2,
-  CreditCard,
   Lock,
   MessageCircle,
-  PackageCheck,
-  ShieldCheck,
   Truck,
 } from "lucide-react";
 import Image from "next/image";
@@ -35,27 +31,16 @@ export default function CheckoutPage() {
   const [apartment, setApartment] = useState("");
   const [city, setCity] = useState("");
   const [postalCode, setPostalCode] = useState("");
-  const [country, setCountry] = useState("United States");
+  const [country, setCountry] = useState("Kenya");
   const [notes, setNotes] = useState("");
-
-  const [shippingMethod, setShippingMethod] = useState<"standard" | "express">("standard");
-  const [paymentMethod, setPaymentMethod] = useState<"card" | "cod" | "whatsapp">("card");
-
-  // Card fields
-  const [cardNumber, setCardNumber] = useState("");
-  const [cardExpiry, setCardExpiry] = useState("");
-  const [cardCvc, setCardCvc] = useState("");
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isCompleted, setIsCompleted] = useState(false);
   const [completedOrder, setCompletedOrder] = useState<any>(null);
 
-  // Cart calculations
+  // Cart calculations: Free shipping and no tax
   const subtotal = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
-  const standardShipping = subtotal > 3000 ? 0 : 500;
-  const shippingFee = shippingMethod === "express" ? 800 : standardShipping;
-  const tax = subtotal * 0.16;
-  const total = subtotal + shippingFee + tax;
+  const total = subtotal;
   const itemCount = cart.reduce((sum, item) => sum + item.quantity, 0);
 
   const handlePlaceOrder = async (e: React.FormEvent) => {
@@ -67,7 +52,7 @@ export default function CheckoutPage() {
     }
 
     setIsSubmitting(true);
-    await new Promise((resolve) => setTimeout(resolve, 900));
+    await new Promise((resolve) => setTimeout(resolve, 800));
 
     const orderNumber = `BLM-${Math.floor(100000 + Math.random() * 900000)}`;
     const orderData = {
@@ -81,14 +66,11 @@ export default function CheckoutPage() {
         name: `${firstName} ${lastName}`,
         email,
         phone,
-        address: `${address}${apartment ? `, ${apartment}` : ""}, ${city}, ${postalCode}, ${country}`,
+        address: `${address}${apartment ? `, ${apartment}` : ""}, ${city}${postalCode ? `, ${postalCode}` : ""}, ${country}`,
       },
       items: [...cart],
-      shippingMethod,
-      paymentMethod,
       subtotal,
-      shippingFee,
-      tax,
+      shippingFee: 0,
       total,
       notes,
     };
@@ -101,7 +83,16 @@ export default function CheckoutPage() {
 
   // Order Confirmation Screen
   if (isCompleted && completedOrder) {
-    const waText = `Hello BloomShop! I just placed order #${completedOrder.orderNumber} for a total of ${formatKES(completedOrder.total)}. Customer: ${completedOrder.customer.name}. Please confirm my shipment!`;
+    const waItemsList = completedOrder.items
+      .map(
+        (item: any) =>
+          `• ${item.name} (x${item.quantity}) - ${formatKES(
+            item.price * item.quantity
+          )}`
+      )
+      .join("\n");
+
+    const waText = `Hello BloomShop! I just placed order #${completedOrder.orderNumber} for a total of ${formatKES(completedOrder.total)}.\n\nCustomer: ${completedOrder.customer.name}\nPhone: ${completedOrder.customer.phone}\nDelivery Address: ${completedOrder.customer.address}${completedOrder.notes ? `\nOrder Notes: ${completedOrder.notes}` : ""}\n\nOrdered Items:\n${waItemsList}\n\nPlease confirm my order and send payment details!`;
     const waUrl = `https://wa.me/254716836551?text=${encodeURIComponent(waText)}`;
 
     return (
@@ -128,8 +119,8 @@ export default function CheckoutPage() {
               <strong className="text-primary font-mono text-base">{completedOrder.orderNumber}</strong>
             </div>
             <div>
-              <span className="text-xs text-muted-foreground block">Estimated Delivery:</span>
-              <strong className="text-foreground">3 - 5 Business Days</strong>
+              <span className="text-xs text-muted-foreground block">Shipping:</span>
+              <strong className="text-emerald-600 font-bold">FREE Delivery</strong>
             </div>
             <div>
               <span className="text-xs text-muted-foreground block">Total Amount:</span>
@@ -326,171 +317,6 @@ export default function CheckoutPage() {
 
             <Separator />
 
-            {/* 3. Shipping Method */}
-            <div className="space-y-4">
-              <h2 className="text-base font-bold text-foreground uppercase tracking-wide flex items-center gap-2">
-                <span className="w-5 h-5 rounded-full bg-primary text-primary-foreground text-xs flex items-center justify-center font-bold">3</span>
-                <span>Shipping Method</span>
-              </h2>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <label
-                  className={`border rounded-xl p-3 flex items-start gap-3 cursor-pointer transition-all ${
-                    shippingMethod === "standard"
-                      ? "border-primary bg-primary/5 ring-1 ring-primary"
-                      : "border-border hover:bg-muted/40"
-                  }`}
-                >
-                  <input
-                    type="radio"
-                    name="shipping"
-                    checked={shippingMethod === "standard"}
-                    onChange={() => setShippingMethod("standard")}
-                    className="mt-1 accent-primary"
-                  />
-                  <div>
-                    <span className="text-xs font-bold text-foreground block">Standard Delivery</span>
-                    <span className="text-[11px] text-muted-foreground block">3-5 business days</span>
-                    <span className="text-xs font-semibold text-primary mt-1 inline-block">
-                      {subtotal > 3000 ? "FREE" : "KES 500"}
-                    </span>
-                  </div>
-                </label>
-
-                <label
-                  className={`border rounded-xl p-3 flex items-start gap-3 cursor-pointer transition-all ${
-                    shippingMethod === "express"
-                      ? "border-primary bg-primary/5 ring-1 ring-primary"
-                      : "border-border hover:bg-muted/40"
-                  }`}
-                >
-                  <input
-                    type="radio"
-                    name="shipping"
-                    checked={shippingMethod === "express"}
-                    onChange={() => setShippingMethod("express")}
-                    className="mt-1 accent-primary"
-                  />
-                  <div>
-                    <span className="text-xs font-bold text-foreground block">Express Courier</span>
-                    <span className="text-[11px] text-muted-foreground block">1-2 business days with tracking</span>
-                    <span className="text-xs font-semibold text-foreground mt-1 inline-block">KES 800</span>
-                  </div>
-                </label>
-              </div>
-            </div>
-
-            <Separator />
-
-            {/* 4. Payment Method */}
-            <div className="space-y-4">
-              <h2 className="text-base font-bold text-foreground uppercase tracking-wide flex items-center gap-2">
-                <span className="w-5 h-5 rounded-full bg-primary text-primary-foreground text-xs flex items-center justify-center font-bold">4</span>
-                <span>Payment Method</span>
-              </h2>
-
-              <div className="space-y-3">
-                {/* Credit Card Option */}
-                <label
-                  className={`border rounded-xl p-3.5 block cursor-pointer transition-all ${
-                    paymentMethod === "card"
-                      ? "border-primary bg-primary/5 ring-1 ring-primary"
-                      : "border-border hover:bg-muted/40"
-                  }`}
-                >
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <input
-                        type="radio"
-                        name="payment"
-                        checked={paymentMethod === "card"}
-                        onChange={() => setPaymentMethod("card")}
-                        className="accent-primary"
-                      />
-                      <CreditCard className="h-4 w-4 text-foreground" />
-                      <span className="text-xs font-bold text-foreground">Credit / Debit Card</span>
-                    </div>
-                    <span className="text-[10px] text-muted-foreground">Secure SSL</span>
-                  </div>
-
-                  {paymentMethod === "card" && (
-                    <div className="mt-3 pt-3 border-t border-border/60 space-y-2.5">
-                      <Input
-                        placeholder="Card number (4000 1234 5678 9010)"
-                        value={cardNumber}
-                        onChange={(e) => setCardNumber(e.target.value)}
-                        className="h-8 text-xs font-mono"
-                      />
-                      <div className="grid grid-cols-2 gap-2">
-                        <Input
-                          placeholder="MM / YY"
-                          value={cardExpiry}
-                          onChange={(e) => setCardExpiry(e.target.value)}
-                          className="h-8 text-xs font-mono"
-                        />
-                        <Input
-                          placeholder="CVC"
-                          value={cardCvc}
-                          onChange={(e) => setCardCvc(e.target.value)}
-                          className="h-8 text-xs font-mono"
-                        />
-                      </div>
-                    </div>
-                  )}
-                </label>
-
-                {/* Cash on Delivery */}
-                <label
-                  className={`border rounded-xl p-3.5 block cursor-pointer transition-all ${
-                    paymentMethod === "cod"
-                      ? "border-primary bg-primary/5 ring-1 ring-primary"
-                      : "border-border hover:bg-muted/40"
-                  }`}
-                >
-                  <div className="flex items-center gap-3">
-                    <input
-                      type="radio"
-                      name="payment"
-                      checked={paymentMethod === "cod"}
-                      onChange={() => setPaymentMethod("cod")}
-                      className="accent-primary"
-                    />
-                    <Banknote className="h-4 w-4 text-foreground" />
-                    <div>
-                      <span className="text-xs font-bold text-foreground block">Cash on Delivery (COD)</span>
-                      <span className="text-[11px] text-muted-foreground block">Pay in cash upon physical package arrival.</span>
-                    </div>
-                  </div>
-                </label>
-
-                {/* WhatsApp Direct Order Confirmation */}
-                <label
-                  className={`border rounded-xl p-3.5 block cursor-pointer transition-all ${
-                    paymentMethod === "whatsapp"
-                      ? "border-primary bg-primary/5 ring-1 ring-primary"
-                      : "border-border hover:bg-muted/40"
-                  }`}
-                >
-                  <div className="flex items-center gap-3">
-                    <input
-                      type="radio"
-                      name="payment"
-                      checked={paymentMethod === "whatsapp"}
-                      onChange={() => setPaymentMethod("whatsapp")}
-                      className="accent-primary"
-                    />
-                    <MessageCircle className="h-4 w-4 text-[#25D366]" />
-                    <div>
-                      <span className="text-xs font-bold text-foreground block">WhatsApp Direct Order</span>
-                      <span className="text-[11px] text-muted-foreground block">
-                        Confirm order and arrange mobile payment or bank transfer via official WhatsApp chat.
-                      </span>
-                    </div>
-                  </div>
-                </label>
-              </div>
-            </div>
-
             {/* Optional Order Notes */}
             <div className="space-y-1.5">
               <label className="text-xs font-medium text-foreground">Order Notes / Instructions (optional)</label>
@@ -549,14 +375,8 @@ export default function CheckoutPage() {
                   <span className="text-foreground font-medium">{formatKES(subtotal)}</span>
                 </div>
                 <div className="flex justify-between text-muted-foreground">
-                  <span>Shipping ({shippingMethod === "express" ? "Express" : "Standard"})</span>
-                  <span className="text-foreground font-medium">
-                    {shippingFee === 0 ? <span className="text-emerald-600 font-bold">FREE</span> : formatKES(shippingFee)}
-                  </span>
-                </div>
-                <div className="flex justify-between text-muted-foreground">
-                  <span>Estimated Tax (8%)</span>
-                  <span className="text-foreground font-medium">{formatKES(tax)}</span>
+                  <span>Shipping</span>
+                  <span className="text-emerald-600 font-bold">FREE</span>
                 </div>
 
                 <Separator className="my-2" />
@@ -586,17 +406,6 @@ export default function CheckoutPage() {
                   </span>
                 )}
               </Button>
-
-              <div className="pt-2 text-[11px] text-muted-foreground space-y-1.5 border-t border-border/50">
-                <div className="flex items-center gap-2">
-                  <ShieldCheck className="h-3.5 w-3.5 text-emerald-600" />
-                  <span>256-Bit SSL Encrypted & Secure Checkout</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <PackageCheck className="h-3.5 w-3.5 text-primary" />
-                  <span>Guaranteed 30-Day Free Returns & Exchanges</span>
-                </div>
-              </div>
             </CardContent>
           </Card>
         </div>
