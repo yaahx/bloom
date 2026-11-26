@@ -17,7 +17,7 @@ export default function AdminAuthModal({
   onClose,
   onLoginSuccess,
 }: AdminAuthModalProps) {
-  const [email, setEmail] = useState("admin@bloomshop.com");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -69,15 +69,9 @@ export default function AdminAuthModal({
 
         {/* Modal Header */}
         <div className="text-center mb-6">
-          <div className="w-12 h-12 mx-auto mb-3 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
-            <Lock className="h-6 w-6" />
-          </div>
           <h2 id="admin-modal-title" className="text-2xl font-bold text-foreground">
-            Admin Portal
+            Login
           </h2>
-          <p className="text-xs sm:text-sm text-muted-foreground mt-1">
-            Sign in with your administrator credentials to add products and manage your catalog.
-          </p>
         </div>
 
         {/* Error Alert */}
@@ -92,14 +86,14 @@ export default function AdminAuthModal({
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-1.5">
             <label className="text-xs font-semibold text-foreground uppercase tracking-wider">
-              Admin Email
+              Email
             </label>
             <div className="relative">
               <Input
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="admin@bloomshop.com"
+                placeholder="name@example.com"
                 required
                 className="pl-9 text-sm"
               />
@@ -146,19 +140,13 @@ export default function AdminAuthModal({
             {isLoading ? (
               <span className="flex items-center gap-2">
                 <span className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
-                Authenticating...
+                Signing in...
               </span>
             ) : (
-              "Login as Administrator"
+              "Login"
             )}
           </Button>
         </form>
-
-        <div className="mt-5 pt-4 border-t border-border/60 text-center">
-          <p className="text-[11px] text-muted-foreground">
-            Default credentials for client access: <span className="font-mono text-foreground font-semibold">admin@bloomshop.com</span> / password: <span className="font-mono text-foreground font-semibold">admin123</span>
-          </p>
-        </div>
       </div>
     </div>
   );
