@@ -1,38 +1,26 @@
 "use client";
 
-import { Badge } from "@/components/ui/badge";
+import CategorySelector from "@/components/admin/CategorySelector";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Separator } from "@/components/ui/separator";
-import { Textarea } from "@/components/ui/textarea";
-import defaultProducts from "@/data/products.json";
 import { formatKES } from "@/lib/utils";
 import { Product } from "@/types/product";
 import {
   ArrowLeft,
   Check,
-  CheckCircle2,
+  ChevronLeft,
+  ChevronRight,
   ExternalLink,
-  FolderPlus,
-  Image as ImageIcon,
-  Layers,
-  Package,
+  ImagePlus,
+  Loader2,
   Plus,
-  ShoppingBag,
-  Sparkles,
-  Trash2,
-  Upload,
   X,
 } from "lucide-react";
-import Image from "next/image";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 
 const BASE_CATEGORIES = ["Shoes", "T-Shirts", "Hoodies", "Accessories"];
 
-// Helper to compress device images to lightweight Web/localStorage friendly Base64
+// Compress device images to lightweight Base64 for localStorage persistence
 const processImageFile = (file: File): Promise<string> => {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
@@ -68,33 +56,35 @@ const processImageFile = (file: File): Promise<string> => {
   });
 };
 
-export default function AdminPage() {
-  const router = useRouter();
+export default function AdminNewProductPage() {
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const mobileGalleryRef = useRef<HTMLDivElement>(null);
 
-  // Categories state
+  // Mobile 2-step state (Step 1: Images, Step 2: Details)
+  const [mobileStep, setMobileStep] = useState<1 | 2>(1);
+  const [mobileSlideIndex, setMobileSlideIndex] = useState(0);
+
+  // Desktop gallery active slide index (0..selectedImages.length, where last index is '+' slide)
+  const [desktopSlideIndex, setDesktopSlideIndex] = useState(0);
+
+  // Categories
   const [categories, setCategories] = useState<string[]>(BASE_CATEGORIES);
-  const [newCategoryName, setNewCategoryName] = useState("");
-  const [categorySuccess, setCategorySuccess] = useState<string | null>(null);
 
-  // Product form state
+  // Form state (preserved seamlessly across mobile steps and viewport changes)
+  const [selectedImages, setSelectedImages] = useState<string[]>([]);
   const [title, setTitle] = useState("");
   const [category, setCategory] = useState("Shoes");
   const [price, setPrice] = useState("");
   const [originalPrice, setOriginalPrice] = useState("");
   const [description, setDescription] = useState("");
-  const [selectedImages, setSelectedImages] = useState<string[]>([]);
+
+  // UI states
   const [isProcessingImages, setIsProcessingImages] = useState(false);
-
-  // Submission state
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [createdProduct, setCreatedProduct] = useState<Product | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [publishedProduct, setPublishedProduct] = useState<Product | null>(null);
 
-  // Active view tab
-  const [activeTab, setActiveTab] = useState<"product" | "categories">("product");
-
-  // Load custom categories and ensure current selection is valid
+  // Load saved custom categories
   useEffect(() => {
     try {
       const storedCats = localStorage.getItem("bloom_custom_categories");
@@ -111,21 +101,36 @@ export default function AdminPage() {
     }
   }, []);
 
-  // Handle Category Creation
-  const handleAddCategory = (e: React.FormEvent) => {
-    e.preventDefault();
-    const trimmed = newCategoryName.trim();
-    if (!trimmed) return;
+  // Prevent accidental loss of unsaved product details
+  useEffect(() => {
+    const hasUnsavedWork =
+      selectedImages.length > 0 ||
+      title.trim().length > 0 ||
+      price.trim().length > 0 ||
+      originalPrice.trim().length > 0 ||
+      description.trim().length > 0;
 
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (hasUnsavedWork && !publishedProduct) {
+        e.preventDefault();
+        e.returnValue = "";
+      }
+    };
+
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () => window.removeEventListener("beforeunload", handleBeforeUnload);
+  }, [selectedImages, title, price, originalPrice, description, publishedProduct]);
+
+  const handleCreateCategory = (newCatName: string) => {
+    const trimmed = newCatName.trim();
+    if (!trimmed) return;
     if (categories.some((c) => c.toLowerCase() === trimmed.toLowerCase())) {
-      alert("A category with this name already exists.");
       return;
     }
 
     const updated = [...categories, trimmed];
     setCategories(updated);
     setCategory(trimmed);
-    setNewCategoryName("");
 
     try {
       const storedCustom: string[] = JSON.parse(
@@ -137,35 +142,12 @@ export default function AdminPage() {
     } catch {
       // ignore
     }
-
-    setCategorySuccess(`Category "${trimmed}" added successfully!`);
-    setTimeout(() => setCategorySuccess(null), 3000);
   };
 
-  // Handle Custom Category Deletion
-  const handleDeleteCategory = (catToDelete: string) => {
-    if (BASE_CATEGORIES.includes(catToDelete)) {
-      alert("Base categories cannot be deleted.");
-      return;
-    }
-    const updated = categories.filter((c) => c !== catToDelete);
-    setCategories(updated);
-    if (category === catToDelete) {
-      setCategory(updated[0] || "Shoes");
-    }
-    try {
-      const storedCustom: string[] = JSON.parse(
-        localStorage.getItem("bloom_custom_categories") || "[]"
-      );
-      const filtered = storedCustom.filter((c) => c !== catToDelete);
-      localStorage.setItem("bloom_custom_categories", JSON.stringify(filtered));
-      window.dispatchEvent(new Event("storage"));
-    } catch {
-      // ignore
-    }
+  const openFilePicker = () => {
+    fileInputRef.current?.click();
   };
 
-  // Handle image files selection from user device
   const handleImageFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files || files.length === 0) return;
@@ -174,14 +156,21 @@ export default function AdminPage() {
     setError(null);
 
     try {
-      const processedPromises = Array.from(files).map((file) => processImageFile(file));
-      const processedResults = await Promise.all(processedPromises);
-      setSelectedImages((prev) => [...prev, ...processedResults]);
+      const processed = await Promise.all(
+        Array.from(files).map((file) => processImageFile(file))
+      );
+      setSelectedImages((prev) => {
+        const next = [...prev, ...processed];
+        // Focus the newly added first image on desktop if we were on the '+' slide
+        if (desktopSlideIndex >= prev.length) {
+          setDesktopSlideIndex(prev.length);
+        }
+        return next;
+      });
     } catch {
-      setError("Failed to load some images. Please try selecting again.");
+      setError("Could not load selected images. Please try again.");
     } finally {
       setIsProcessingImages(false);
-      // reset input value so re-selecting same file works
       if (fileInputRef.current) {
         fileInputRef.current.value = "";
       }
@@ -189,39 +178,78 @@ export default function AdminPage() {
   };
 
   const handleRemoveImage = (indexToRemove: number) => {
-    setSelectedImages((prev) => prev.filter((_, idx) => idx !== indexToRemove));
+    setSelectedImages((prev) => {
+      const next = prev.filter((_, idx) => idx !== indexToRemove);
+      if (desktopSlideIndex >= next.length && next.length > 0) {
+        setDesktopSlideIndex(next.length - 1);
+      } else if (next.length === 0) {
+        setDesktopSlideIndex(0);
+        setMobileStep(1);
+      }
+      if (mobileSlideIndex >= next.length && next.length > 0) {
+        setMobileSlideIndex(next.length - 1);
+      }
+      return next;
+    });
   };
 
-  // Handle Product Submission
-  const handleCreateProduct = async (e: React.FormEvent) => {
+  const handleMobileGalleryScroll = () => {
+    const el = mobileGalleryRef.current;
+    if (!el || el.clientWidth === 0) return;
+    const index = Math.round(el.scrollLeft / el.clientWidth);
+    setMobileSlideIndex(index);
+  };
+
+  const scrollToMobileSlide = (index: number) => {
+    const el = mobileGalleryRef.current;
+    if (!el) return;
+    el.scrollTo({ left: index * el.clientWidth, behavior: "smooth" });
+  };
+
+  const handlePublish = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
 
+    if (selectedImages.length === 0) {
+      setError("Add at least one product image.");
+      return;
+    }
+
     if (!title.trim()) {
-      setError("Please provide a product title.");
+      setError("Enter a product title.");
+      return;
+    }
+
+    if (!category.trim()) {
+      setError("Select a category.");
       return;
     }
 
     const numPrice = parseFloat(price);
     if (isNaN(numPrice) || numPrice <= 0) {
-      setError("Please enter a valid price in KES.");
+      setError("Enter a valid selling price.");
       return;
     }
 
-    if (selectedImages.length === 0) {
-      setError("Please select at least one image from your device.");
-      return;
+    let numOriginalPrice: number | undefined;
+    if (originalPrice.trim()) {
+      const parsedOrig = parseFloat(originalPrice);
+      if (isNaN(parsedOrig) || parsedOrig <= 0) {
+        setError("Original price must be a valid amount.");
+        return;
+      }
+      numOriginalPrice = Math.round(parsedOrig);
     }
 
     setIsSubmitting(true);
-    await new Promise((resolve) => setTimeout(resolve, 400));
+    await new Promise((resolve) => setTimeout(resolve, 350));
 
-    const newProd: Product = {
+    const newProduct: Product = {
       id: Date.now(),
       name: title.trim(),
-      category,
+      category: category.trim(),
       price: Math.round(numPrice),
-      originalPrice: originalPrice ? Math.round(parseFloat(originalPrice)) : undefined,
+      originalPrice: numOriginalPrice,
       image: selectedImages[0],
       images: selectedImages,
       description:
@@ -234,508 +262,513 @@ export default function AdminPage() {
     try {
       const stored = localStorage.getItem("bloom_custom_products");
       const list: Product[] = stored ? JSON.parse(stored) : [];
-      list.unshift(newProd);
+      list.unshift(newProduct);
       localStorage.setItem("bloom_custom_products", JSON.stringify(list));
       window.dispatchEvent(new Event("storage"));
-    } catch (err) {
-      console.error("Storage error:", err);
+    } catch {
+      setIsSubmitting(false);
+      setError("Storage limit reached. Try using fewer or smaller images.");
+      return;
     }
 
     setIsSubmitting(false);
-    setCreatedProduct(newProd);
+    setPublishedProduct(newProduct);
 
-    // Reset fields for subsequent addition
+    // Reset form
     setTitle("");
     setPrice("");
     setOriginalPrice("");
     setDescription("");
     setSelectedImages([]);
+    setDesktopSlideIndex(0);
+    setMobileSlideIndex(0);
+    setMobileStep(1);
   };
 
-  return (
-    <div className="bg-background min-h-screen py-8 sm:py-12">
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-5xl">
-        {/* Top Navigation & Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8 pb-6 border-b border-border/80">
-          <div>
-            <div className="flex items-center gap-2 mb-1.5">
-              <Button
-                variant="ghost"
-                size="sm"
-                asChild
-                className="text-xs text-muted-foreground hover:text-foreground -ml-2 h-7 gap-1"
-              >
-                <Link href="/shop">
-                  <ArrowLeft className="h-3.5 w-3.5" />
-                  <span>Back to Store</span>
-                </Link>
-              </Button>
-            </div>
-            <h1 className="text-2xl sm:text-3xl font-extrabold text-foreground tracking-tight">
-              Product & Category Management
+  const handleStartAnother = () => {
+    setPublishedProduct(null);
+    setError(null);
+  };
+
+  // Shared product detail inputs (flat, minimal, no cards/boxes)
+  const renderProductFields = () => (
+    <div className="space-y-6">
+      {/* Product Title */}
+      <div>
+        <label
+          htmlFor="product-title"
+          className="block text-xs font-medium text-muted-foreground mb-1"
+        >
+          Product Title
+        </label>
+        <input
+          id="product-title"
+          type="text"
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+          placeholder="e.g. Air Retro Low"
+          className="w-full py-2.5 px-0 bg-transparent border-b border-border text-sm text-foreground placeholder:text-muted-foreground/60 focus:outline-none focus:border-primary transition-colors"
+        />
+      </div>
+
+      {/* Category */}
+      <div>
+        <span className="block text-xs font-medium text-muted-foreground mb-1">
+          Category
+        </span>
+        <CategorySelector
+          categories={categories}
+          value={category}
+          onChange={setCategory}
+          onCreateCategory={handleCreateCategory}
+        />
+      </div>
+
+      {/* Selling Price & Original Price */}
+      <div className="grid grid-cols-2 gap-6">
+        <div>
+          <label
+            htmlFor="selling-price"
+            className="block text-xs font-medium text-muted-foreground mb-1"
+          >
+            Selling Price (KES)
+          </label>
+          <input
+            id="selling-price"
+            type="number"
+            min="1"
+            step="1"
+            inputMode="numeric"
+            value={price}
+            onChange={(e) => setPrice(e.target.value)}
+            placeholder="0"
+            className="w-full py-2.5 px-0 bg-transparent border-b border-border text-sm text-foreground placeholder:text-muted-foreground/60 focus:outline-none focus:border-primary transition-colors"
+          />
+        </div>
+
+        <div>
+          <label
+            htmlFor="original-price"
+            className="block text-xs font-medium text-muted-foreground mb-1"
+          >
+            Original Price (optional)
+          </label>
+          <input
+            id="original-price"
+            type="number"
+            min="1"
+            step="1"
+            inputMode="numeric"
+            value={originalPrice}
+            onChange={(e) => setOriginalPrice(e.target.value)}
+            placeholder="0"
+            className="w-full py-2.5 px-0 bg-transparent border-b border-border text-sm text-foreground placeholder:text-muted-foreground/60 focus:outline-none focus:border-primary transition-colors"
+          />
+        </div>
+      </div>
+
+      {/* Description */}
+      <div>
+        <label
+          htmlFor="product-description"
+          className="block text-xs font-medium text-muted-foreground mb-1"
+        >
+          Description
+        </label>
+        <textarea
+          id="product-description"
+          rows={4}
+          value={description}
+          onChange={(e) => setDescription(e.target.value)}
+          placeholder="Write a product description..."
+          className="w-full py-2.5 px-0 bg-transparent border-b border-border text-sm text-foreground placeholder:text-muted-foreground/60 focus:outline-none focus:border-primary transition-colors resize-none"
+        />
+      </div>
+
+      {/* Validation / Error Message */}
+      {error && (
+        <p className="text-xs font-medium text-destructive">{error}</p>
+      )}
+
+      {/* Publish Button */}
+      <div className="pt-2">
+        <Button
+          type="submit"
+          disabled={isSubmitting || isProcessingImages}
+          className="w-full h-11 rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 font-semibold text-sm shadow-none"
+        >
+          {isSubmitting ? (
+            <span className="inline-flex items-center gap-2">
+              <Loader2 className="h-4 w-4 animate-spin" />
+              Publishing...
+            </span>
+          ) : (
+            "Publish Product"
+          )}
+        </Button>
+      </div>
+    </div>
+  );
+
+  // Success State View
+  if (publishedProduct) {
+    return (
+      <div className="min-h-[calc(100vh-60px)] bg-background flex items-center justify-center px-4 py-12">
+        <div className="w-full max-w-sm text-center space-y-6">
+          <div className="w-12 h-12 rounded-full bg-primary/15 text-primary flex items-center justify-center mx-auto">
+            <Check className="h-6 w-6" />
+          </div>
+
+          <div className="space-y-1.5">
+            <h1 className="text-lg font-bold text-foreground">
+              {publishedProduct.name}
             </h1>
-            <p className="text-xs sm:text-sm text-muted-foreground mt-1">
-              Add new products with device images and create custom categories for your catalog.
+            <p className="text-sm text-muted-foreground">
+              {publishedProduct.category} &bull; {formatKES(publishedProduct.price)}
             </p>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex flex-col gap-2.5 pt-2">
             <Button
-              variant={activeTab === "product" ? "default" : "outline"}
-              size="sm"
-              onClick={() => setActiveTab("product")}
-              className="text-xs gap-1.5 h-9 rounded-xl"
+              asChild
+              className="w-full h-11 rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 font-semibold text-sm shadow-none"
             >
-              <Package className="h-3.5 w-3.5" />
-              <span>Add Product</span>
+              <Link href={`/product/${publishedProduct.id}`}>
+                <span className="inline-flex items-center gap-1.5">
+                  View Product
+                  <ExternalLink className="h-3.5 w-3.5" />
+                </span>
+              </Link>
             </Button>
             <Button
-              variant={activeTab === "categories" ? "default" : "outline"}
-              size="sm"
-              onClick={() => setActiveTab("categories")}
-              className="text-xs gap-1.5 h-9 rounded-xl"
+              type="button"
+              variant="outline"
+              onClick={handleStartAnother}
+              className="w-full h-11 rounded-xl text-sm font-medium shadow-none"
             >
-              <Layers className="h-3.5 w-3.5" />
-              <span>Categories ({categories.length})</span>
+              Add Another Product
             </Button>
           </div>
         </div>
+      </div>
+    );
+  }
 
-        {/* Success Banner after Product Creation */}
-        {createdProduct && (
-          <div className="mb-8 p-4 sm:p-5 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-foreground animate-in slide-in-from-top-3 duration-300 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-emerald-500 text-white flex items-center justify-center shrink-0">
-                <Check className="h-5 w-5" />
-              </div>
-              <div>
-                <p className="text-sm font-bold text-foreground">
-                  &quot;{createdProduct.name}&quot; successfully published!
-                </p>
-                <p className="text-xs text-muted-foreground mt-0.5">
-                  Category: <strong>{createdProduct.category}</strong> &bull; Price:{" "}
-                  <strong>{formatKES(createdProduct.price)}</strong> &bull; {createdProduct.images?.length || 1} image(s)
-                </p>
-              </div>
-            </div>
+  const desktopTotalSlides = selectedImages.length + 1; // images + trailing '+' upload slide
+  const mobileTotalSlides = selectedImages.length + 1;
 
-            <div className="flex items-center gap-2 self-end sm:self-center">
-              <Button size="sm" asChild variant="outline" className="text-xs h-8 rounded-lg gap-1.5">
-                <Link href={`/product/${createdProduct.id}`} target="_blank">
-                  <span>View Product</span>
-                  <ExternalLink className="h-3 w-3" />
-                </Link>
-              </Button>
-              <Button
-                size="sm"
-                variant="ghost"
-                onClick={() => setCreatedProduct(null)}
-                className="text-xs h-8 rounded-lg"
+  return (
+    <div className="min-h-[calc(100vh-60px)] bg-background">
+      {/* Shared Hidden File Input */}
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept="image/*"
+        multiple
+        onChange={handleImageFileChange}
+        className="hidden"
+      />
+
+      {/* ================= MOBILE LAYOUT (< md) ================= */}
+      <div className="md:hidden px-4 py-5 pb-10 max-w-md mx-auto">
+        {mobileStep === 1 ? (
+          /* STEP 1: IMAGE SELECTION */
+          <div className="space-y-5">
+            {selectedImages.length === 0 ? (
+              <button
+                type="button"
+                onClick={openFilePicker}
+                disabled={isProcessingImages}
+                className="w-full aspect-[4/5] rounded-xl border-2 border-dashed border-border hover:border-primary/60 transition-colors flex flex-col items-center justify-center gap-3 text-muted-foreground bg-transparent"
               >
-                Dismiss
-              </Button>
-            </div>
-          </div>
-        )}
-
-        {/* TAB 1: ADD PRODUCT */}
-        {activeTab === "product" && (
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-            {/* Form Column */}
-            <div className="lg:col-span-8">
-              <Card className="border-border/80 shadow-sm rounded-2xl">
-                <CardHeader className="pb-4">
-                  <CardTitle className="text-lg font-bold text-foreground flex items-center gap-2">
-                    <Plus className="h-5 w-5 text-primary" />
-                    <span>Create New Product</span>
-                  </CardTitle>
-                  <CardDescription className="text-xs">
-                    Fill in the details below. Images are uploaded directly from your phone or computer.
-                  </CardDescription>
-                </CardHeader>
-
-                <CardContent>
-                  {error && (
-                    <div className="mb-5 p-3 rounded-xl bg-destructive/10 border border-destructive/20 text-destructive text-xs">
-                      {error}
-                    </div>
-                  )}
-
-                  <form onSubmit={handleCreateProduct} className="space-y-5">
-                    {/* Product Title */}
-                    <div className="space-y-1.5">
-                      <label className="text-xs font-bold text-foreground uppercase tracking-wider block">
-                        Product Title *
-                      </label>
-                      <Input
-                        value={title}
-                        onChange={(e) => setTitle(e.target.value)}
-                        placeholder="e.g. Classic Heavyweight Oversized Tee"
-                        required
-                        className="h-10 text-sm rounded-xl"
-                      />
-                    </div>
-
-                    {/* Category Selection */}
-                    <div className="space-y-1.5">
-                      <div className="flex items-center justify-between">
-                        <label className="text-xs font-bold text-foreground uppercase tracking-wider block">
-                          Category *
-                        </label>
+                {isProcessingImages ? (
+                  <Loader2 className="h-7 w-7 animate-spin text-primary" />
+                ) : (
+                  <ImagePlus className="h-7 w-7 stroke-[1.5]" />
+                )}
+                <span className="text-sm font-medium text-foreground">
+                  {isProcessingImages ? "Loading..." : "Add product image"}
+                </span>
+              </button>
+            ) : (
+              <div className="space-y-3">
+                {/* Swipeable Vertical Gallery */}
+                <div className="relative w-full aspect-[4/5] rounded-xl overflow-hidden bg-muted/30">
+                  <div
+                    ref={mobileGalleryRef}
+                    onScroll={handleMobileGalleryScroll}
+                    className="w-full h-full flex overflow-x-auto snap-x snap-mandatory scroll-smooth [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
+                  >
+                    {selectedImages.map((imgSrc, idx) => (
+                      <div
+                        key={idx}
+                        className="w-full h-full shrink-0 snap-center relative"
+                      >
+                        <img
+                          src={imgSrc}
+                          alt={`Product ${idx + 1}`}
+                          className="w-full h-full object-cover"
+                        />
                         <button
                           type="button"
-                          onClick={() => setActiveTab("categories")}
-                          className="text-[11px] text-primary hover:underline font-medium"
+                          onClick={() => handleRemoveImage(idx)}
+                          className="absolute top-3 right-3 w-8 h-8 rounded-full bg-background/85 text-foreground flex items-center justify-center hover:bg-background transition-colors"
+                          aria-label="Remove image"
                         >
-                          + Create New Category
+                          <X className="h-4 w-4" />
                         </button>
                       </div>
-                      <select
-                        value={category}
-                        onChange={(e) => setCategory(e.target.value)}
-                        className="w-full h-10 rounded-xl border border-input bg-card px-3 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/40 cursor-pointer"
-                      >
-                        {categories.map((cat) => (
-                          <option key={cat} value={cat}>
-                            {cat}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-
-                    {/* Pricing Grid */}
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      <div className="space-y-1.5">
-                        <label className="text-xs font-bold text-foreground uppercase tracking-wider block">
-                          Price (KES) *
-                        </label>
-                        <Input
-                          type="number"
-                          step="1"
-                          min="1"
-                          value={price}
-                          onChange={(e) => setPrice(e.target.value)}
-                          placeholder="3500"
-                          required
-                          className="h-10 text-sm rounded-xl font-mono"
-                        />
-                      </div>
-
-                      <div className="space-y-1.5">
-                        <label className="text-xs font-bold text-foreground uppercase tracking-wider block">
-                          Original Price (KES, optional)
-                        </label>
-                        <Input
-                          type="number"
-                          step="1"
-                          min="1"
-                          value={originalPrice}
-                          onChange={(e) => setOriginalPrice(e.target.value)}
-                          placeholder="4500"
-                          className="h-10 text-sm rounded-xl font-mono"
-                        />
-                        <p className="text-[11px] text-muted-foreground">
-                          Leave blank if this item is not discounted.
-                        </p>
-                      </div>
-                    </div>
-
-                    {/* Image Files Upload Area */}
-                    <div className="space-y-2 pt-2 border-t border-border/60">
-                      <div className="flex items-center justify-between">
-                        <label className="text-xs font-bold text-foreground uppercase tracking-wider block">
-                          Product Images (from your device) *
-                        </label>
-                        {selectedImages.length > 0 && (
-                          <span className="text-xs text-muted-foreground">
-                            {selectedImages.length} image{selectedImages.length > 1 ? "s" : ""} selected
-                          </span>
-                        )}
-                      </div>
-
-                      {/* Hidden File Input */}
-                      <input
-                        ref={fileInputRef}
-                        type="file"
-                        accept="image/*"
-                        multiple
-                        onChange={handleImageFileChange}
-                        className="hidden"
-                        id="product-image-upload"
-                      />
-
-                      {/* Dropzone Trigger */}
-                      <label
-                        htmlFor="product-image-upload"
-                        className="border-2 border-dashed border-border/80 hover:border-primary/60 hover:bg-primary/5 rounded-2xl p-6 flex flex-col items-center justify-center text-center cursor-pointer transition-all duration-200"
-                      >
-                        <div className="w-12 h-12 rounded-full bg-primary/10 text-primary flex items-center justify-center mb-3">
-                          {isProcessingImages ? (
-                            <div className="w-5 h-5 border-2 border-current border-t-transparent rounded-full animate-spin" />
-                          ) : (
-                            <Upload className="h-6 w-6" />
-                          )}
-                        </div>
-                        <p className="text-sm font-semibold text-foreground">
-                          {isProcessingImages
-                            ? "Processing selected files..."
-                            : "Click to select image files from your device"}
-                        </p>
-                        <p className="text-xs text-muted-foreground mt-1 max-w-sm">
-                          Select one or multiple photos (JPG, PNG, WEBP). Photos are optimized automatically.
-                        </p>
-                      </label>
-
-                      {/* Thumbnails Preview Grid */}
-                      {selectedImages.length > 0 && (
-                        <div className="pt-3">
-                          <p className="text-[11px] text-muted-foreground mb-2">
-                            First image is the cover photo. You can remove or add more files anytime.
-                          </p>
-                          <div className="grid grid-cols-3 sm:grid-cols-4 gap-3">
-                            {selectedImages.map((imgSrc, idx) => (
-                              <div
-                                key={idx}
-                                className="relative aspect-square rounded-xl overflow-hidden border border-border bg-muted/30 group"
-                              >
-                                <Image
-                                  src={imgSrc}
-                                  alt={`Upload preview ${idx + 1}`}
-                                  fill
-                                  className="object-cover"
-                                />
-                                {idx === 0 && (
-                                  <span className="absolute top-1.5 left-1.5 bg-neutral-900/90 text-white text-[9px] font-bold px-1.5 py-0.5 rounded shadow-sm">
-                                    Cover
-                                  </span>
-                                )}
-                                <button
-                                  type="button"
-                                  onClick={() => handleRemoveImage(idx)}
-                                  className="absolute top-1.5 right-1.5 w-6 h-6 rounded-full bg-black/70 hover:bg-destructive text-white flex items-center justify-center transition-colors"
-                                  aria-label="Remove image"
-                                >
-                                  <X className="h-3.5 w-3.5" />
-                                </button>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Description */}
-                    <div className="space-y-1.5 pt-2 border-t border-border/60">
-                      <label className="text-xs font-bold text-foreground uppercase tracking-wider block">
-                        Description
-                      </label>
-                      <Textarea
-                        value={description}
-                        onChange={(e) => setDescription(e.target.value)}
-                        placeholder="Detail materials, fit, care instructions, sizing recommendations..."
-                        rows={3}
-                        className="text-sm rounded-xl"
-                      />
-                    </div>
-
-                    {/* Submit Button */}
-                    <div className="pt-4 border-t border-border flex items-center justify-end gap-3">
-                      <Button
-                        type="button"
-                        variant="outline"
-                        onClick={() => router.push("/shop")}
-                        className="rounded-xl h-10 px-5 text-xs"
-                      >
-                        Cancel
-                      </Button>
-                      <Button
-                        type="submit"
-                        disabled={isSubmitting || isProcessingImages}
-                        className="bg-primary text-primary-foreground hover:bg-primary/90 rounded-xl h-10 px-6 font-bold text-xs shadow-md gap-2"
-                      >
-                        {isSubmitting ? (
-                          <>
-                            <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
-                            <span>Publishing Product...</span>
-                          </>
-                        ) : (
-                          <>
-                            <Plus className="h-4 w-4" />
-                            <span>Add Product to Store</span>
-                          </>
-                        )}
-                      </Button>
-                    </div>
-                  </form>
-                </CardContent>
-              </Card>
-            </div>
-
-            {/* Quick Tips & Category Sidebar */}
-            <div className="lg:col-span-4 space-y-6">
-              <Card className="border-border/80 shadow-sm rounded-2xl bg-card">
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-sm font-bold text-foreground flex items-center gap-2">
-                    <Layers className="h-4 w-4 text-primary" />
-                    <span>Store Categories</span>
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-3">
-                  <p className="text-xs text-muted-foreground leading-relaxed">
-                    Products will appear in their assigned category carousel on the homepage and under shop filters.
-                  </p>
-                  <div className="flex flex-wrap gap-1.5 pt-1">
-                    {categories.map((c) => (
-                      <Badge
-                        key={c}
-                        variant={category === c ? "default" : "secondary"}
-                        onClick={() => setCategory(c)}
-                        className="cursor-pointer text-xs py-1 px-2.5 rounded-lg"
-                      >
-                        {c}
-                      </Badge>
                     ))}
-                  </div>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setActiveTab("categories")}
-                    className="w-full text-xs mt-2 rounded-xl"
-                  >
-                    Manage Categories &rarr;
-                  </Button>
-                </CardContent>
-              </Card>
 
-              <Card className="border-border/80 shadow-sm rounded-2xl bg-muted/20">
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-sm font-bold text-foreground flex items-center gap-2">
-                    <Sparkles className="h-4 w-4 text-amber-500" />
-                    <span>Quick Tip</span>
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="text-xs text-muted-foreground space-y-2">
-                  <p>
-                    &bull; <strong>Multiple images:</strong> The first image selected will be shown on cards, and all images will be scrollable via arrows on the product details page.
-                  </p>
-                  <p>
-                    &bull; <strong>Currency:</strong> All prices are in Kenyan Shillings (KES).
-                  </p>
-                </CardContent>
-              </Card>
-            </div>
-          </div>
-        )}
-
-        {/* TAB 2: MANAGE CATEGORIES */}
-        {activeTab === "categories" && (
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-            <div className="lg:col-span-6">
-              <Card className="border-border/80 shadow-sm rounded-2xl">
-                <CardHeader>
-                  <CardTitle className="text-lg font-bold text-foreground flex items-center gap-2">
-                    <FolderPlus className="h-5 w-5 text-primary" />
-                    <span>Add New Category</span>
-                  </CardTitle>
-                  <CardDescription className="text-xs">
-                    Create a new product category (e.g. &quot;Caps&quot;, &quot;Jackets&quot;, &quot;Watches&quot;).
-                  </CardDescription>
-                </CardHeader>
-
-                <CardContent>
-                  {categorySuccess && (
-                    <div className="mb-4 p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 text-xs flex items-center gap-2">
-                      <CheckCircle2 className="h-4 w-4 shrink-0" />
-                      <span>{categorySuccess}</span>
+                    {/* Trailing '+' Upload Slide */}
+                    <div className="w-full h-full shrink-0 snap-center p-0.5">
+                      <button
+                        type="button"
+                        onClick={openFilePicker}
+                        disabled={isProcessingImages}
+                        className="w-full h-full rounded-xl border-2 border-dashed border-border hover:border-primary/60 transition-colors flex flex-col items-center justify-center gap-2 text-muted-foreground"
+                        aria-label="Add more images"
+                      >
+                        {isProcessingImages ? (
+                          <Loader2 className="h-7 w-7 animate-spin text-primary" />
+                        ) : (
+                          <Plus className="h-8 w-8 stroke-[1.5] text-foreground" />
+                        )}
+                      </button>
                     </div>
+                  </div>
+                </div>
+
+                {/* Subtle Position Indicators */}
+                <div className="flex items-center justify-center gap-1.5 pt-1">
+                  {Array.from({ length: mobileTotalSlides }).map((_, idx) => {
+                    const isActive = idx === mobileSlideIndex;
+                    return (
+                      <button
+                        key={idx}
+                        type="button"
+                        onClick={() => scrollToMobileSlide(idx)}
+                        aria-label={
+                          idx === selectedImages.length
+                            ? "Add more images"
+                            : `Image ${idx + 1}`
+                        }
+                        className={`h-1.5 rounded-full transition-all ${
+                          isActive
+                            ? "w-4 bg-primary"
+                            : "w-1.5 bg-border"
+                        }`}
+                      />
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            {error && (
+              <p className="text-xs font-medium text-destructive text-center">
+                {error}
+              </p>
+            )}
+
+            {/* Next Button shown once at least one image is selected */}
+            {selectedImages.length > 0 && (
+              <Button
+                type="button"
+                onClick={() => {
+                  setError(null);
+                  setMobileStep(2);
+                }}
+                className="w-full h-11 rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 font-semibold text-sm shadow-none"
+              >
+                Next
+              </Button>
+            )}
+          </div>
+        ) : (
+          /* STEP 2: PRODUCT DETAILS */
+          <form onSubmit={handlePublish} className="space-y-6">
+            {/* Back to image selection */}
+            <div className="flex items-center justify-between">
+              <button
+                type="button"
+                onClick={() => {
+                  setError(null);
+                  setMobileStep(1);
+                }}
+                className="inline-flex items-center gap-1.5 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+              >
+                <ArrowLeft className="h-4 w-4" />
+                <span>Images</span>
+              </button>
+              <span className="text-xs text-muted-foreground">
+                {selectedImages.length}{" "}
+                {selectedImages.length === 1 ? "photo" : "photos"}
+              </span>
+            </div>
+
+            {/* Gallery visible at the top */}
+            <div className="flex gap-2.5 overflow-x-auto pb-1 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+              {selectedImages.map((imgSrc, idx) => (
+                <div
+                  key={idx}
+                  className="relative w-24 aspect-[4/5] rounded-lg overflow-hidden shrink-0 bg-muted/30"
+                >
+                  <img
+                    src={imgSrc}
+                    alt={`Selected ${idx + 1}`}
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+              ))}
+              <button
+                type="button"
+                onClick={openFilePicker}
+                disabled={isProcessingImages}
+                className="w-24 aspect-[4/5] rounded-lg border-2 border-dashed border-border hover:border-primary/60 transition-colors flex items-center justify-center shrink-0 text-muted-foreground"
+                aria-label="Add more images"
+              >
+                {isProcessingImages ? (
+                  <Loader2 className="h-5 w-5 animate-spin text-primary" />
+                ) : (
+                  <Plus className="h-5 w-5" />
+                )}
+              </button>
+            </div>
+
+            {/* Product Input Fields */}
+            {renderProductFields()}
+          </form>
+        )}
+      </div>
+
+      {/* ================= DESKTOP LAYOUT (>= md) ================= */}
+      <div className="hidden md:block max-w-4xl mx-auto px-6 py-10">
+        <form
+          onSubmit={handlePublish}
+          className="grid grid-cols-12 gap-10 lg:gap-12 items-start"
+        >
+          {/* Left Column: Image Upload & Preview */}
+          <div className="col-span-5 space-y-3">
+            {selectedImages.length === 0 ? (
+              <button
+                type="button"
+                onClick={openFilePicker}
+                disabled={isProcessingImages}
+                className="w-full aspect-[4/5] rounded-xl border-2 border-dashed border-border hover:border-primary/60 transition-colors flex flex-col items-center justify-center gap-3 text-muted-foreground bg-transparent"
+              >
+                {isProcessingImages ? (
+                  <Loader2 className="h-7 w-7 animate-spin text-primary" />
+                ) : (
+                  <ImagePlus className="h-7 w-7 stroke-[1.5]" />
+                )}
+                <span className="text-sm font-medium text-foreground">
+                  {isProcessingImages ? "Loading..." : "Add product image"}
+                </span>
+              </button>
+            ) : (
+              <>
+                <div className="relative w-full aspect-[4/5] rounded-xl overflow-hidden bg-muted/30">
+                  {desktopSlideIndex < selectedImages.length ? (
+                    <>
+                      <img
+                        src={selectedImages[desktopSlideIndex]}
+                        alt={`Product ${desktopSlideIndex + 1}`}
+                        className="w-full h-full object-cover"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveImage(desktopSlideIndex)}
+                        className="absolute top-3 right-3 w-8 h-8 rounded-full bg-background/85 text-foreground flex items-center justify-center hover:bg-background transition-colors"
+                        aria-label="Remove image"
+                      >
+                        <X className="h-4 w-4" />
+                      </button>
+                    </>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={openFilePicker}
+                      disabled={isProcessingImages}
+                      className="w-full h-full rounded-xl border-2 border-dashed border-border hover:border-primary/60 transition-colors flex flex-col items-center justify-center gap-2 text-muted-foreground bg-background"
+                      aria-label="Add more images"
+                    >
+                      {isProcessingImages ? (
+                        <Loader2 className="h-7 w-7 animate-spin text-primary" />
+                      ) : (
+                        <Plus className="h-8 w-8 stroke-[1.5] text-foreground" />
+                      )}
+                    </button>
                   )}
 
-                  <form onSubmit={handleAddCategory} className="space-y-4">
-                    <div className="space-y-1.5">
-                      <label className="text-xs font-bold text-foreground uppercase tracking-wider block">
-                        Category Name *
-                      </label>
-                      <Input
-                        value={newCategoryName}
-                        onChange={(e) => setNewCategoryName(e.target.value)}
-                        placeholder="e.g. Jackets & Outerwear"
-                        required
-                        className="h-10 text-sm rounded-xl"
+                  {/* Left / Right Navigation Arrows */}
+                  {desktopSlideIndex > 0 && (
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setDesktopSlideIndex((prev) => Math.max(0, prev - 1))
+                      }
+                      className="absolute left-3 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-background/85 text-foreground flex items-center justify-center hover:bg-background transition-colors"
+                      aria-label="Previous image"
+                    >
+                      <ChevronLeft className="h-4 w-4" />
+                    </button>
+                  )}
+                  {desktopSlideIndex < desktopTotalSlides - 1 && (
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setDesktopSlideIndex((prev) =>
+                          Math.min(desktopTotalSlides - 1, prev + 1)
+                        )
+                      }
+                      className="absolute right-3 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-background/85 text-foreground flex items-center justify-center hover:bg-background transition-colors"
+                      aria-label="Next image"
+                    >
+                      <ChevronRight className="h-4 w-4" />
+                    </button>
+                  )}
+                </div>
+
+                {/* Position Dots & Add More Action */}
+                <div className="flex items-center justify-between pt-1">
+                  <div className="flex items-center gap-1.5">
+                    {Array.from({ length: desktopTotalSlides }).map((_, idx) => (
+                      <button
+                        key={idx}
+                        type="button"
+                        onClick={() => setDesktopSlideIndex(idx)}
+                        aria-label={
+                          idx === selectedImages.length
+                            ? "Add more images"
+                            : `Image ${idx + 1}`
+                        }
+                        className={`h-1.5 rounded-full transition-all ${
+                          idx === desktopSlideIndex
+                            ? "w-4 bg-primary"
+                            : "w-1.5 bg-border hover:bg-muted-foreground/50"
+                        }`}
                       />
-                    </div>
-
-                    <Button
-                      type="submit"
-                      className="w-full bg-primary text-primary-foreground hover:bg-primary/90 rounded-xl h-10 font-bold text-xs shadow-md gap-2"
-                    >
-                      <Plus className="h-4 w-4" />
-                      <span>Create Category</span>
-                    </Button>
-                  </form>
-                </CardContent>
-              </Card>
-            </div>
-
-            <div className="lg:col-span-6">
-              <Card className="border-border/80 shadow-sm rounded-2xl">
-                <CardHeader>
-                  <CardTitle className="text-lg font-bold text-foreground">
-                    Current Categories ({categories.length})
-                  </CardTitle>
-                  <CardDescription className="text-xs">
-                    Categories available for product assignment and shop browsing.
-                  </CardDescription>
-                </CardHeader>
-
-                <CardContent>
-                  <div className="divide-y divide-border/60">
-                    {categories.map((cat) => {
-                      const isBase = BASE_CATEGORIES.includes(cat);
-                      return (
-                        <div
-                          key={cat}
-                          className="py-3 first:pt-0 last:pb-0 flex items-center justify-between gap-3 text-sm"
-                        >
-                          <div className="flex items-center gap-2.5">
-                            <span className="w-2 h-2 rounded-full bg-primary" />
-                            <span className="font-semibold text-foreground">{cat}</span>
-                            {isBase && (
-                              <span className="text-[10px] text-muted-foreground bg-muted px-2 py-0.5 rounded-md">
-                                Default
-                              </span>
-                            )}
-                          </div>
-
-                          {!isBase && (
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => handleDeleteCategory(cat)}
-                              className="text-muted-foreground hover:text-destructive h-8 px-2 text-xs gap-1"
-                              aria-label={`Delete category ${cat}`}
-                            >
-                              <Trash2 className="h-3.5 w-3.5" />
-                              <span>Remove</span>
-                            </Button>
-                          )}
-                        </div>
-                      );
-                    })}
+                    ))}
                   </div>
 
-                  <div className="pt-5 mt-4 border-t border-border">
-                    <Button
-                      onClick={() => setActiveTab("product")}
-                      className="w-full bg-secondary text-secondary-foreground hover:bg-secondary/80 rounded-xl h-10 font-medium text-xs"
-                    >
-                      &larr; Return to Add Product Form
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
+                  <button
+                    type="button"
+                    onClick={openFilePicker}
+                    disabled={isProcessingImages}
+                    className="inline-flex items-center gap-1 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    <Plus className="h-3.5 w-3.5" />
+                    <span>Add more</span>
+                  </button>
+                </div>
+              </>
+            )}
           </div>
-        )}
+
+          {/* Right Column: Product Details */}
+          <div className="col-span-7">{renderProductFields()}</div>
+        </form>
       </div>
     </div>
   );

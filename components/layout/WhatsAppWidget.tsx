@@ -1,6 +1,7 @@
 "use client";
 
 import { MessageCircle, X } from "lucide-react";
+import { usePathname } from "next/navigation";
 import { useState } from "react";
 
 interface WhatsAppWidgetProps {
@@ -12,8 +13,13 @@ export default function WhatsAppWidget({
   phoneNumber = "+254716836551",
   defaultMessage = "Hello BloomShop! I am interested in your products and would like to ask a question.",
 }: WhatsAppWidgetProps) {
+  const pathname = usePathname();
   const [isOpen, setIsOpen] = useState(false);
   const [hasDismissed, setHasDismissed] = useState(false);
+
+  if (pathname === "/admin" || pathname?.startsWith("/admin/")) {
+    return null;
+  }
 
   const cleanNumber = phoneNumber.replace(/[^0-9]/g, "");
   const whatsappUrl = `https://wa.me/${cleanNumber}?text=${encodeURIComponent(
