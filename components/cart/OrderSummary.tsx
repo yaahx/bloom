@@ -16,9 +16,7 @@ export default function OrderSummary() {
     (sum, item) => sum + item.price * item.quantity,
     0
   );
-  const shipping = subtotal > 3000 ? 0 : 500;
-  const tax = subtotal * 0.16;
-  const total = subtotal + shipping + tax;
+  const total = subtotal;
   const itemCount = cart.reduce((sum, item) => sum + item.quantity, 0);
 
   return (
@@ -39,19 +37,10 @@ export default function OrderSummary() {
           <div className="flex justify-between text-sm">
             <span className="text-muted-foreground">Shipping</span>
             <span className="font-medium">
-              {shipping === 0 ? (
-                <Badge variant="secondary" className="text-xs">
-                  Free
-                </Badge>
-              ) : (
-                `${formatKES(shipping)}`
-              )}
+              <Badge variant="secondary" className="text-xs text-emerald-600 bg-emerald-500/10 hover:bg-emerald-500/10 border-0">
+                Free
+              </Badge>
             </span>
-          </div>
-
-          <div className="flex justify-between text-sm">
-            <span className="text-muted-foreground">Tax</span>
-            <span className="font-medium">{formatKES(tax)}</span>
           </div>
 
           <Separator />
@@ -63,20 +52,6 @@ export default function OrderSummary() {
             </span>
           </div>
         </div>
-
-        {shipping > 0 && (
-          <div className="p-3 bg-accent/10 rounded-lg border border-accent/20">
-            <div className="flex items-center gap-2 mb-2">
-              <Truck className="h-4 w-4 text-accent-foreground" />
-              <span className="text-sm font-medium text-accent-foreground">
-                Free shipping on orders over KES 3,000
-              </span>
-            </div>
-            <p className="text-xs text-muted-foreground">
-              Add {formatKES(3000 - subtotal)} more to qualify!
-            </p>
-          </div>
-        )}
 
         <Button
           size="lg"
