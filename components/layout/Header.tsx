@@ -256,7 +256,8 @@ export default function Header() {
               <div className="hidden lg:flex flex-1 max-w-md mx-8">
                 <form onSubmit={handleSearchSubmit} className="relative w-full">
                   <input
-                    type="search"
+                    type="text"
+                    enterKeyHint="search"
                     placeholder="Search shoes, t-shirts, hoodies, bags..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
@@ -367,7 +368,8 @@ export default function Header() {
               <form onSubmit={handleSearchSubmit} className="relative flex items-center gap-2">
                 <div className="relative flex-1">
                   <input
-                    type="search"
+                    type="text"
+                    enterKeyHint="search"
                     placeholder="Search products..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
