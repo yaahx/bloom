@@ -181,6 +181,27 @@ export async function fetchProducts(): Promise<Product[]> {
   return (data as DbProductRow[]).map(mapDbRowToProduct);
 }
 
+export async function fetchProductById(id: number): Promise<Product | null> {
+  if (!Number.isFinite(id)) return null;
+
+  if (!supabase || !isSupabaseConfigured) {
+    return getStoredProducts().find((p) => p.id === id) ?? null;
+  }
+
+  const { data, error } = await supabase
+    .from("products")
+    .select("*")
+    .eq("id", id)
+    .maybeSingle();
+
+  if (error) {
+    return getStoredProducts().find((p) => p.id === id) ?? null;
+  }
+
+  if (!data) return null;
+  return mapDbRowToProduct(data as DbProductRow);
+}
+
 export async function createProductInDb(
   input: Omit<Product, "id">
 ): Promise<{ product: Product | null; error?: string }> {

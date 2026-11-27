@@ -93,25 +93,37 @@ function matchesProductSearch(product: Product, query: string): boolean {
   return allTokensMatch;
 }
 
-export default function ShopClient() {
+interface ShopClientProps {
+  initialProducts?: Product[];
+  initialCategories?: string[];
+}
+
+export default function ShopClient({
+  initialProducts,
+  initialCategories,
+}: ShopClientProps) {
   const searchParams = useSearchParams();
   const initialCategory = searchParams.get("category") || "All";
   const initialSearch = searchParams.get("search") || "";
 
-  const [products, setProducts] = useState<Product[]>(defaultProducts as Product[]);
+  const [products, setProducts] = useState<Product[]>(
+    initialProducts ?? (defaultProducts as Product[])
+  );
   const [selectedCategory, setSelectedCategory] = useState<string>(initialCategory);
   const [searchQuery, setSearchQuery] = useState<string>(initialSearch);
   const [maxPrice, setMaxPrice] = useState<number>(6000);
   const [sortBy, setSortBy] = useState<string>("featured");
   const [isMobileFiltersOpen, setIsMobileFiltersOpen] = useState<boolean>(false);
 
-  const [categories, setCategories] = useState<string[]>([
-    "All",
-    "Shoes",
-    "T-Shirts",
-    "Hoodies",
-    "Accessories",
-  ]);
+  const [categories, setCategories] = useState<string[]>(
+    initialCategories ? ["All", ...initialCategories] : [
+      "All",
+      "Shoes",
+      "T-Shirts",
+      "Hoodies",
+      "Accessories",
+    ]
+  );
 
   // Sync products and categories with Supabase (or localStorage fallback)
   useEffect(() => {

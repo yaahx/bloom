@@ -2,13 +2,14 @@
 
 import defaultProducts from "@/data/products.json";
 import { fetchProducts, PRODUCTS_UPDATED_EVENT } from "@/lib/products";
+import { isSupabaseConfigured } from "@/lib/supabase";
 import { Product } from "@/types/product";
 import { useEffect, useState } from "react";
 import ProductCard from "./ProductCard";
 
 export default function ProductList() {
   const [products, setProducts] = useState<Product[]>(
-    defaultProducts as Product[]
+    isSupabaseConfigured ? [] : (defaultProducts as Product[])
   );
 
   useEffect(() => {

@@ -2,7 +2,6 @@
 
 import ProductCard from "@/components/home/ProductCard";
 import { Button } from "@/components/ui/button";
-import rawProducts from "@/data/products.json";
 import { fetchProducts } from "@/lib/products";
 import { Product } from "@/types/product";
 import { ArrowRight } from "lucide-react";
@@ -11,12 +10,17 @@ import { useEffect, useState } from "react";
 
 interface RelatedProductsProps {
   product: Product;
+  initialProducts?: Product[];
 }
 
-export default function RelatedProducts({ product }: RelatedProductsProps) {
-  const [products, setProducts] = useState<Product[]>(rawProducts as Product[]);
+export default function RelatedProducts({
+  product,
+  initialProducts,
+}: RelatedProductsProps) {
+  const [products, setProducts] = useState<Product[]>(initialProducts ?? []);
 
   useEffect(() => {
+    if (initialProducts && initialProducts.length > 0) return;
     let active = true;
     fetchProducts().then((list) => {
       if (active) setProducts(list);
@@ -24,16 +28,22 @@ export default function RelatedProducts({ product }: RelatedProductsProps) {
     return () => {
       active = false;
     };
-  }, [product.id]);
+  }, [product.id, initialProducts]);
 
   // First match same category, then fallback to others
   const sameCategory = products.filter(
-    (p) => p.id !== product.id && p.category === product.category
+    (p) =>
+      p.id !== product.id &&
+      p.category?.toLowerCase() === product.category?.toLowerCase()
   );
   const otherItems = products.filter(
-    (p) => p.id !== product.id && p.category !== product.category
+    (p) =>
+      p.id !== product.id &&
+      p.category?.toLowerCase() !== product.category?.toLowerCase()
   );
   const relatedList = [...sameCategory, ...otherItems].slice(0, 4);
+
+  if (relatedList.length === 0) return null;
 
   return (
     <section className="pt-8 sm:pt-12 border-t border-border/60">
@@ -43,8 +53,17 @@ export default function RelatedProducts({ product }: RelatedProductsProps) {
             Related
           </h2>
         </div>
-        <Button variant="ghost" size="sm" asChild className="text-xs gap-1 text-primary hover:text-primary/80">
-          <Link href={`/shop?category=${encodeURIComponent(product.category || "All")}`}>
+        <Button
+          variant="ghost"
+          size="sm"
+          asChild
+          className="text-xs gap-1 text-primary hover:text-primary/80"
+        >
+          <Link
+            href={`/shop?category=${encodeURIComponent(
+              product.category || "All"
+            )}`}
+          >
             <span>View All</span>
             <ArrowRight className="h-3.5 w-3.5" />
           </Link>

@@ -108,10 +108,10 @@ export default function ProductCard({ product, className }: ProductCardProps) {
           {!imageError ? (
             <Image
               src={product.image}
-              alt={product.name}
+              alt={`${product.name} — ${product.category || "Streetwear"} | BloomShop`}
               width={350}
               height={430}
-              sizes="(max-width: 640px) 180px, (max-width: 1024px) 240px, 280px"
+              sizes="(max-width: 640px) 190px, (max-width: 1024px) 240px, 280px"
               className={cn(
                 "w-full h-full object-cover transition-transform duration-500 group-hover:scale-105",
                 isSoldOut && "grayscale-[40%] opacity-80"
