@@ -2,7 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { cn } from "@/lib/utils";
+import { isSupabaseConfigured, supabase } from "@/lib/supabase";
 import { Eye, EyeOff, Lock, Mail, ShieldAlert, X } from "lucide-react";
 import { useState } from "react";
 
@@ -35,17 +35,35 @@ export default function AdminAuthModal({
     }
 
     setIsLoading(true);
-    await new Promise((resolve) => setTimeout(resolve, 600));
 
-    // Admin login validation (supports mock admin credentials or any configured admin email)
+    if (supabase && isSupabaseConfigured) {
+      const { data, error: authError } = await supabase.auth.signInWithPassword({
+        email: email.trim(),
+        password,
+      });
+
+      if (authError || !data.user) {
+        setError(authError?.message || "Invalid email or password.");
+        setIsLoading(false);
+        return;
+      }
+
+      setIsLoading(false);
+      onLoginSuccess(data.user.email || email.trim());
+      onClose();
+      return;
+    }
+
+    await new Promise((resolve) => setTimeout(resolve, 400));
+
     if (password.length < 4) {
-      setError("Invalid password. Please enter a valid admin password (minimum 4 characters).");
+      setError("Invalid password. Please enter a valid password.");
       setIsLoading(false);
       return;
     }
 
     setIsLoading(false);
-    onLoginSuccess(email);
+    onLoginSuccess(email.trim());
     onClose();
   };
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { getAllReviews, saveReview } from "@/lib/reviews";
+import { createReviewInDb, fetchReviews } from "@/lib/reviews";
 import type { Review } from "@/lib/reviews";
 import { Send, Star, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
@@ -190,7 +190,6 @@ export default function ReviewsDrawer({
   const [comment, setComment] = useState("");
   const [hoverRating, setHoverRating] = useState(0);
   const [selectedRating, setSelectedRating] = useState(0);
-  const [submitting, setSubmitting] = useState(false);
   const [nameError, setNameError] = useState(false);
 
   const bodyRef = useRef<HTMLDivElement>(null);
@@ -225,15 +224,14 @@ export default function ReviewsDrawer({
     };
   }, [isOpen]);
 
-  // Simulate loading reviews when drawer opens
+  // Fetch reviews when drawer opens
   useEffect(() => {
     if (!isOpen) return;
     setLoading(true);
-    const t = setTimeout(() => {
-      setReviews(getAllReviews(productId));
+    fetchReviews(productId).then((data) => {
+      setReviews(data);
       setLoading(false);
-    }, 1100);
-    return () => clearTimeout(t);
+    });
   }, [isOpen, productId]);
 
   // Computed values
@@ -253,17 +251,15 @@ export default function ReviewsDrawer({
     comment.trim().length > 0 &&
     selectedRating > 0;
 
-  const handleSubmit = async () => {
+  const handleSubmit = () => {
     if (!authorName.trim()) {
       setNameError(true);
       return;
     }
     if (!canSubmit) return;
 
-    setSubmitting(true);
-    await new Promise((r) => setTimeout(r, 500));
-
-    const newReview: Review = {
+    // Build optimistic review — appears instantly, no waiting
+    const optimisticReview: Review = {
       id: `r-${Date.now()}`,
       productId,
       author: authorName.trim(),
@@ -271,20 +267,28 @@ export default function ReviewsDrawer({
       comment: comment.trim(),
       date: new Date().toISOString(),
     };
-    saveReview(newReview);
-    setReviews(getAllReviews(productId));
 
-    // Reset form
+    // 1. Update UI immediately (optimistic)
+    setReviews((prev) => [optimisticReview, ...prev]);
+
+    // 2. Reset form immediately
     setComment("");
     setSelectedRating(0);
     setHoverRating(0);
-    setSubmitting(false);
+    if (textareaRef.current) textareaRef.current.style.height = "auto";
 
-    // Scroll reviews to top to show new review
+    // 3. Scroll reviews list to top to show new post
     if (bodyRef.current) bodyRef.current.scrollTop = 0;
 
-    // Reset textarea height
-    if (textareaRef.current) textareaRef.current.style.height = "auto";
+    // 4. Persist to Supabase / localStorage in background (fire-and-forget)
+    createReviewInDb({
+      productId,
+      author: optimisticReview.author,
+      rating: optimisticReview.rating,
+      comment: optimisticReview.comment,
+    }).catch(() => {
+      // silently ignore — optimistic review stays in list
+    });
   };
 
   if (!mounted) return null;
@@ -404,7 +408,7 @@ export default function ReviewsDrawer({
                   type="button"
                   onMouseEnter={() => setHoverRating(star)}
                   onMouseLeave={() => setHoverRating(0)}
-                  onClick={() => setSelectedRating(star === selectedRating ? 0 : star)}
+                  onClick={() => setSelectedRating(star)}
                   className="active:scale-125 transition-transform duration-100"
                   aria-label={`Rate ${star} star${star > 1 ? "s" : ""}`}
                 >
@@ -438,19 +442,15 @@ export default function ReviewsDrawer({
             />
             <button
               onClick={handleSubmit}
-              disabled={!canSubmit || submitting}
+              disabled={!canSubmit}
               aria-label="Post review"
               className={`w-9 h-9 rounded-full flex items-center justify-center shrink-0 transition-all duration-200 mb-0.5 ${
-                canSubmit && !submitting
+                canSubmit
                   ? "bg-primary text-primary-foreground scale-100"
                   : "bg-muted text-muted-foreground/30 scale-95"
               }`}
             >
-              {submitting ? (
-                <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
-              ) : (
-                <Send className="h-4 w-4" />
-              )}
+              <Send className="h-4 w-4" />
             </button>
           </div>
         </div>

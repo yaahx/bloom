@@ -1,17 +1,31 @@
+"use client";
+
 import ProductCard from "@/components/home/ProductCard";
 import { Button } from "@/components/ui/button";
 import rawProducts from "@/data/products.json";
+import { fetchProducts } from "@/lib/products";
 import { Product } from "@/types/product";
 import { ArrowRight } from "lucide-react";
 import Link from "next/link";
-
-const products = rawProducts as Product[];
+import { useEffect, useState } from "react";
 
 interface RelatedProductsProps {
   product: Product;
 }
 
 export default function RelatedProducts({ product }: RelatedProductsProps) {
+  const [products, setProducts] = useState<Product[]>(rawProducts as Product[]);
+
+  useEffect(() => {
+    let active = true;
+    fetchProducts().then((list) => {
+      if (active) setProducts(list);
+    });
+    return () => {
+      active = false;
+    };
+  }, [product.id]);
+
   // First match same category, then fallback to others
   const sameCategory = products.filter(
     (p) => p.id !== product.id && p.category === product.category

@@ -1,3 +1,5 @@
+import { isSupabaseConfigured, supabase } from "@/lib/supabase";
+
 export interface Review {
   id: string;
   productId: number;
@@ -7,7 +9,16 @@ export interface Review {
   date: string; // ISO string
 }
 
-// Seed reviews shown before real DB is connected
+interface DbReviewRow {
+  id: string;
+  product_id: number;
+  author: string;
+  rating: number;
+  comment: string;
+  created_at: string;
+}
+
+// Seed reviews shown only when Supabase is not configured yet
 const MOCK_REVIEWS: Omit<Review, "productId">[] = [
   {
     id: "mock-1",
@@ -25,23 +36,18 @@ const MOCK_REVIEWS: Omit<Review, "productId">[] = [
       "Really solid product. Fits perfectly and looks exactly like the photos. Great value for the price.",
     date: "2026-11-15T14:30:00Z",
   },
-  {
-    id: "mock-3",
-    author: "Sam O.",
-    rating: 5,
-    comment:
-      "Worth every shilling. The quality is outstanding — you can tell a lot of care went into this. Highly recommend.",
-    date: "2026-11-10T09:00:00Z",
-  },
-  {
-    id: "mock-4",
-    author: "Chris W.",
-    rating: 3,
-    comment:
-      "Good product overall, delivery took a little longer than expected but the item itself is solid quality.",
-    date: "2026-11-05T16:00:00Z",
-  },
 ];
+
+function mapDbReview(row: DbReviewRow): Review {
+  return {
+    id: row.id,
+    productId: row.product_id,
+    author: row.author,
+    rating: row.rating,
+    comment: row.comment,
+    date: row.created_at,
+  };
+}
 
 export function getStoredReviews(productId: number): Review[] {
   if (typeof window === "undefined") return [];
@@ -68,18 +74,60 @@ export function getAllReviews(productId: number): Review[] {
   return [...stored, ...mocks];
 }
 
-export function getAverageRating(productId: number): number {
-  const reviews = getAllReviews(productId);
-  if (reviews.length === 0) return 0;
-  const sum = reviews.reduce((acc, r) => acc + r.rating, 0);
-  return Math.round((sum / reviews.length) * 10) / 10;
+export async function fetchReviews(productId: number): Promise<Review[]> {
+  if (!supabase || !isSupabaseConfigured) {
+    return getAllReviews(productId);
+  }
+
+  const { data, error } = await supabase
+    .from("reviews")
+    .select("*")
+    .eq("product_id", productId)
+    .order("created_at", { ascending: false });
+
+  if (error || !data) {
+    return getAllReviews(productId);
+  }
+
+  return (data as DbReviewRow[]).map(mapDbReview);
 }
 
-export function getRatingBreakdown(productId: number): Record<number, number> {
-  const reviews = getAllReviews(productId);
-  const breakdown: Record<number, number> = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
-  reviews.forEach((r) => {
-    breakdown[r.rating] = (breakdown[r.rating] || 0) + 1;
-  });
-  return breakdown;
+export async function createReviewInDb(input: {
+  productId: number;
+  author: string;
+  rating: number;
+  comment: string;
+}): Promise<{ review: Review | null; error?: string }> {
+  if (!supabase || !isSupabaseConfigured) {
+    const localReview: Review = {
+      id: `r-${Date.now()}`,
+      productId: input.productId,
+      author: input.author,
+      rating: input.rating,
+      comment: input.comment,
+      date: new Date().toISOString(),
+    };
+    saveReview(localReview);
+    return { review: localReview };
+  }
+
+  const { data, error } = await supabase
+    .from("reviews")
+    .insert({
+      product_id: input.productId,
+      author: input.author,
+      rating: input.rating,
+      comment: input.comment,
+    })
+    .select()
+    .single();
+
+  if (error || !data) {
+    return {
+      review: null,
+      error: error?.message || "Failed to save review.",
+    };
+  }
+
+  return { review: mapDbReview(data as DbReviewRow) };
 }

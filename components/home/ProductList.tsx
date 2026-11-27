@@ -1,7 +1,7 @@
 "use client";
 
 import defaultProducts from "@/data/products.json";
-import { getStoredProducts } from "@/lib/products";
+import { fetchProducts, PRODUCTS_UPDATED_EVENT } from "@/lib/products";
 import { Product } from "@/types/product";
 import { useEffect, useState } from "react";
 import ProductCard from "./ProductCard";
@@ -12,10 +12,19 @@ export default function ProductList() {
   );
 
   useEffect(() => {
-    const load = () => setProducts(getStoredProducts());
+    let active = true;
+    const load = async () => {
+      const list = await fetchProducts();
+      if (active) setProducts(list);
+    };
     load();
+    window.addEventListener(PRODUCTS_UPDATED_EVENT, load);
     window.addEventListener("storage", load);
-    return () => window.removeEventListener("storage", load);
+    return () => {
+      active = false;
+      window.removeEventListener(PRODUCTS_UPDATED_EVENT, load);
+      window.removeEventListener("storage", load);
+    };
   }, []);
 
   return (

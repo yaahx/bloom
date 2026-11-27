@@ -4,7 +4,11 @@ import ProductCard from "@/components/home/ProductCard";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import defaultProducts from "@/data/products.json";
-import { getStoredProducts } from "@/lib/products";
+import {
+  fetchCategories,
+  fetchProducts,
+  PRODUCTS_UPDATED_EVENT,
+} from "@/lib/products";
 import { formatKES } from "@/lib/utils";
 import { Product } from "@/types/product";
 import {
@@ -39,30 +43,31 @@ export default function ShopClient() {
     "Accessories",
   ]);
 
-  // Sync products and categories with local storage if admin added products or categories
+  // Sync products and categories with Supabase (or localStorage fallback)
   useEffect(() => {
-    const loadData = () => {
+    let active = true;
+    const loadData = async () => {
       try {
-        setProducts(getStoredProducts());
-
-        const storedCats = localStorage.getItem("bloom_custom_categories");
-        if (storedCats) {
-          const customCats: string[] = JSON.parse(storedCats);
-          setCategories([
-            "All",
-            ...Array.from(
-              new Set(["Shoes", "T-Shirts", "Hoodies", "Accessories", ...customCats])
-            ),
-          ]);
-        }
+        const [prodList, catList] = await Promise.all([
+          fetchProducts(),
+          fetchCategories(),
+        ]);
+        if (!active) return;
+        setProducts(prodList);
+        setCategories(["All", ...catList]);
       } catch {
         // ignore
       }
     };
     loadData();
 
+    window.addEventListener(PRODUCTS_UPDATED_EVENT, loadData);
     window.addEventListener("storage", loadData);
-    return () => window.removeEventListener("storage", loadData);
+    return () => {
+      active = false;
+      window.removeEventListener(PRODUCTS_UPDATED_EVENT, loadData);
+      window.removeEventListener("storage", loadData);
+    };
   }, []);
 
   // Update from URL params

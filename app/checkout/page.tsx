@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
 import { useCart } from "@/context/CartContext";
+import { createOrderInDb } from "@/lib/orders";
 import { formatKES } from "@/lib/utils";
 import {
   ArrowLeft,
@@ -53,8 +54,24 @@ export default function CheckoutPage() {
     await new Promise((resolve) => setTimeout(resolve, 800));
 
     const orderNumber = `BLM-${Math.floor(100000 + Math.random() * 900000)}`;
-    const orderData = {
+    const shippingAddress = `${address}${apartment ? `, ${apartment}` : ""}, ${city}${postalCode ? `, ${postalCode}` : ""}, ${country}`;
+
+    // Persist order to Supabase / localStorage
+    const { order } = await createOrderInDb({
       orderNumber,
+      customerName: `${firstName} ${lastName}`,
+      customerEmail: email,
+      customerPhone: phone,
+      shippingAddress,
+      items: cart,
+      subtotal,
+      shippingFee: 0,
+      total,
+      notes,
+    });
+
+    const orderData = {
+      orderNumber: order?.orderNumber ?? orderNumber,
       date: new Date().toLocaleDateString("en-US", {
         year: "numeric",
         month: "short",
@@ -64,7 +81,7 @@ export default function CheckoutPage() {
         name: `${firstName} ${lastName}`,
         email,
         phone,
-        address: `${address}${apartment ? `, ${apartment}` : ""}, ${city}${postalCode ? `, ${postalCode}` : ""}, ${country}`,
+        address: shippingAddress,
       },
       items: [...cart],
       subtotal,

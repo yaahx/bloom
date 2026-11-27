@@ -2,6 +2,7 @@
 
 import AdminAuthModal from "@/components/admin/AdminAuthModal";
 import { useCart } from "@/context/CartContext";
+import { isSupabaseConfigured, supabase } from "@/lib/supabase";
 import { Product } from "@/types/product";
 import {
   LogOut,
@@ -61,8 +62,34 @@ export default function Header() {
     setIsSearchOpen(false);
   }, [pathname]);
 
-  // Check stored admin session
+  // Check stored admin session (Supabase Auth or local fallback)
   useEffect(() => {
+    if (supabase && isSupabaseConfigured) {
+      supabase.auth.getSession().then(({ data }) => {
+        if (data.session?.user) {
+          setIsAdminLoggedIn(true);
+          setAdminEmail(data.session.user.email || "Admin");
+        } else {
+          setIsAdminLoggedIn(false);
+          setAdminEmail("");
+        }
+      });
+
+      const {
+        data: { subscription },
+      } = supabase.auth.onAuthStateChange((_event, session) => {
+        if (session?.user) {
+          setIsAdminLoggedIn(true);
+          setAdminEmail(session.user.email || "Admin");
+        } else {
+          setIsAdminLoggedIn(false);
+          setAdminEmail("");
+        }
+      });
+
+      return () => subscription.unsubscribe();
+    }
+
     try {
       const session = localStorage.getItem("bloom_admin_session");
       if (session) {
@@ -78,19 +105,24 @@ export default function Header() {
   const handleAdminLogin = (email: string) => {
     setIsAdminLoggedIn(true);
     setAdminEmail(email);
-    try {
-      localStorage.setItem(
-        "bloom_admin_session",
-        JSON.stringify({ email, timestamp: Date.now() })
-      );
-    } catch {
-      // ignore
+    if (!isSupabaseConfigured) {
+      try {
+        localStorage.setItem(
+          "bloom_admin_session",
+          JSON.stringify({ email, timestamp: Date.now() })
+        );
+      } catch {
+        // ignore
+      }
     }
   };
 
-  const handleAdminLogout = () => {
+  const handleAdminLogout = async () => {
     setIsAdminLoggedIn(false);
     setAdminEmail("");
+    if (supabase && isSupabaseConfigured) {
+      await supabase.auth.signOut();
+    }
     try {
       localStorage.removeItem("bloom_admin_session");
     } catch {

@@ -2,6 +2,12 @@
 
 import CategorySelector from "@/components/admin/CategorySelector";
 import { Button } from "@/components/ui/button";
+import {
+  BASE_CATEGORIES,
+  createCategoryInDb,
+  createProductInDb,
+  fetchCategories,
+} from "@/lib/products";
 import { formatKES } from "@/lib/utils";
 import { Product } from "@/types/product";
 import {
@@ -18,9 +24,7 @@ import {
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 
-const BASE_CATEGORIES = ["Shoes", "T-Shirts", "Hoodies", "Accessories"];
-
-// Compress device images to lightweight Base64 for localStorage persistence
+// Compress device images to lightweight Base64 before upload
 const processImageFile = (file: File): Promise<string> => {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
@@ -84,21 +88,19 @@ export default function AdminNewProductPage() {
   const [error, setError] = useState<string | null>(null);
   const [publishedProduct, setPublishedProduct] = useState<Product | null>(null);
 
-  // Load saved custom categories
+  // Load saved categories from Supabase (with local fallback)
   useEffect(() => {
-    try {
-      const storedCats = localStorage.getItem("bloom_custom_categories");
-      if (storedCats) {
-        const custom: string[] = JSON.parse(storedCats);
-        const merged = Array.from(new Set([...BASE_CATEGORIES, ...custom]));
-        setCategories(merged);
-        if (merged.length > 0 && !merged.includes(category)) {
-          setCategory(merged[0]);
-        }
+    let active = true;
+    fetchCategories().then((merged) => {
+      if (!active) return;
+      setCategories(merged);
+      if (merged.length > 0 && !merged.includes(category)) {
+        setCategory(merged[0]);
       }
-    } catch {
-      // ignore
-    }
+    });
+    return () => {
+      active = false;
+    };
   }, []);
 
   // Prevent accidental loss of unsaved product details
@@ -121,7 +123,7 @@ export default function AdminNewProductPage() {
     return () => window.removeEventListener("beforeunload", handleBeforeUnload);
   }, [selectedImages, title, price, originalPrice, description, publishedProduct]);
 
-  const handleCreateCategory = (newCatName: string) => {
+  const handleCreateCategory = async (newCatName: string) => {
     const trimmed = newCatName.trim();
     if (!trimmed) return;
     if (categories.some((c) => c.toLowerCase() === trimmed.toLowerCase())) {
@@ -131,17 +133,7 @@ export default function AdminNewProductPage() {
     const updated = [...categories, trimmed];
     setCategories(updated);
     setCategory(trimmed);
-
-    try {
-      const storedCustom: string[] = JSON.parse(
-        localStorage.getItem("bloom_custom_categories") || "[]"
-      );
-      storedCustom.push(trimmed);
-      localStorage.setItem("bloom_custom_categories", JSON.stringify(storedCustom));
-      window.dispatchEvent(new Event("storage"));
-    } catch {
-      // ignore
-    }
+    await createCategoryInDb(trimmed);
   };
 
   const openFilePicker = () => {
@@ -242,10 +234,8 @@ export default function AdminNewProductPage() {
     }
 
     setIsSubmitting(true);
-    await new Promise((resolve) => setTimeout(resolve, 350));
 
-    const newProduct: Product = {
-      id: Date.now(),
+    const { product: created, error: saveError } = await createProductInDb({
       name: title.trim(),
       category: category.trim(),
       price: Math.round(numPrice),
@@ -256,23 +246,17 @@ export default function AdminNewProductPage() {
         description.trim() ||
         `Premium ${category.toLowerCase()} designed for daily comfort and timeless style.`,
       rating: 5.0,
-      reviewsCount: 1,
-    };
+      reviewsCount: 0,
+    });
 
-    try {
-      const stored = localStorage.getItem("bloom_custom_products");
-      const list: Product[] = stored ? JSON.parse(stored) : [];
-      list.unshift(newProduct);
-      localStorage.setItem("bloom_custom_products", JSON.stringify(list));
-      window.dispatchEvent(new Event("storage"));
-    } catch {
+    if (saveError || !created) {
       setIsSubmitting(false);
-      setError("Storage limit reached. Try using fewer or smaller images.");
+      setError(saveError || "Could not publish product. Please try again.");
       return;
     }
 
     setIsSubmitting(false);
-    setPublishedProduct(newProduct);
+    setPublishedProduct(created);
 
     // Reset form
     setTitle("");

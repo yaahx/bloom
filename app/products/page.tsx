@@ -3,9 +3,13 @@
 import CategorySelector from "@/components/admin/CategorySelector";
 import { Button } from "@/components/ui/button";
 import {
-  deleteStoredProduct,
-  getStoredProducts,
-  saveProductUpdate,
+  BASE_CATEGORIES,
+  createCategoryInDb,
+  deleteProductInDb,
+  fetchCategories,
+  fetchProducts,
+  PRODUCTS_UPDATED_EVENT,
+  updateProductInDb,
 } from "@/lib/products";
 import { formatKES } from "@/lib/utils";
 import { Product } from "@/types/product";
@@ -22,8 +26,6 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
-
-const BASE_CATEGORIES = ["Shoes", "T-Shirts", "Hoodies", "Accessories"];
 
 const processImageFile = (file: File): Promise<string> => {
   return new Promise((resolve, reject) => {
@@ -82,21 +84,24 @@ export default function ProductsPage() {
   const editFileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    const loadData = () => {
-      setProducts(getStoredProducts());
-      try {
-        const storedCats = localStorage.getItem("bloom_custom_categories");
-        if (storedCats) {
-          const custom: string[] = JSON.parse(storedCats);
-          setCategories(Array.from(new Set([...BASE_CATEGORIES, ...custom])));
-        }
-      } catch {
-        // ignore
-      }
+    let active = true;
+    const loadData = async () => {
+      const [prodList, catList] = await Promise.all([
+        fetchProducts(),
+        fetchCategories(),
+      ]);
+      if (!active) return;
+      setProducts(prodList);
+      setCategories(catList);
     };
     loadData();
+    window.addEventListener(PRODUCTS_UPDATED_EVENT, loadData);
     window.addEventListener("storage", loadData);
-    return () => window.removeEventListener("storage", loadData);
+    return () => {
+      active = false;
+      window.removeEventListener(PRODUCTS_UPDATED_EVENT, loadData);
+      window.removeEventListener("storage", loadData);
+    };
   }, []);
 
   const filterCategories = useMemo(() => {
@@ -123,19 +128,22 @@ export default function ProductsPage() {
     });
   }, [products, selectedCategory, searchQuery]);
 
-  const handleToggleOutOfStock = (product: Product) => {
+  const handleToggleOutOfStock = async (product: Product) => {
     const updated: Product = {
       ...product,
       isSoldOut: !product.isSoldOut,
     };
-    saveProductUpdate(updated);
-    setProducts(getStoredProducts());
+    // Optimistic update
+    setProducts((prev) =>
+      prev.map((p) => (p.id === product.id ? updated : p))
+    );
+    await updateProductInDb(updated);
   };
 
-  const handleDelete = (id: number) => {
-    deleteStoredProduct(id);
+  const handleDelete = async (id: number) => {
     setConfirmDeleteId(null);
-    setProducts(getStoredProducts());
+    setProducts((prev) => prev.filter((p) => p.id !== id));
+    await deleteProductInDb(id);
   };
 
   const openEditModal = (product: Product) => {
@@ -158,7 +166,7 @@ export default function ProductsPage() {
     setEditError(null);
   };
 
-  const handleCreateCategory = (newCatName: string) => {
+  const handleCreateCategory = async (newCatName: string) => {
     const trimmed = newCatName.trim();
     if (!trimmed) return;
     if (categories.some((c) => c.toLowerCase() === trimmed.toLowerCase())) {
@@ -167,19 +175,7 @@ export default function ProductsPage() {
     const updated = [...categories, trimmed];
     setCategories(updated);
     setEditCategory(trimmed);
-    try {
-      const storedCustom: string[] = JSON.parse(
-        localStorage.getItem("bloom_custom_categories") || "[]"
-      );
-      storedCustom.push(trimmed);
-      localStorage.setItem(
-        "bloom_custom_categories",
-        JSON.stringify(storedCustom)
-      );
-      window.dispatchEvent(new Event("storage"));
-    } catch {
-      // ignore
-    }
+    await createCategoryInDb(trimmed);
   };
 
   const handleEditImageAdd = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -245,15 +241,16 @@ export default function ProductsPage() {
       isSoldOut: editIsSoldOut,
     };
 
-    try {
-      saveProductUpdate(updated);
-      setProducts(getStoredProducts());
-      setEditingProduct(null);
-    } catch {
-      setEditError("Storage limit reached. Try fewer or smaller images.");
-    } finally {
+    const { product: saved, error: saveError } = await updateProductInDb(updated);
+    if (saveError || !saved) {
+      setEditError(saveError || "Could not update product.");
       setIsSavingEdit(false);
+      return;
     }
+
+    setProducts((prev) => prev.map((p) => (p.id === saved.id ? saved : p)));
+    setEditingProduct(null);
+    setIsSavingEdit(false);
   };
 
   return (

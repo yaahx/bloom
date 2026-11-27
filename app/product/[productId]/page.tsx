@@ -7,9 +7,8 @@ import ReviewsDrawer from "@/components/product/ReviewsDrawer";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { useCart } from "@/context/CartContext";
-import defaultProducts from "@/data/products.json";
-import { getStoredProducts } from "@/lib/products";
-import { getAllReviews } from "@/lib/reviews";
+import { fetchProducts } from "@/lib/products";
+import { fetchReviews } from "@/lib/reviews";
 import { formatKES } from "@/lib/utils";
 import { Product } from "@/types/product";
 import {
@@ -31,9 +30,7 @@ export default function ProductDetailPage() {
   const { productId } = useParams();
   const router = useRouter();
 
-  const [allProducts, setAllProducts] = useState<Product[]>(
-    defaultProducts as Product[]
-  );
+  const [allProducts, setAllProducts] = useState<Product[]>([]);
   const [quantity, setQuantity] = useState(1);
   const [isAdding, setIsAdding] = useState(false);
   const [justAdded, setJustAdded] = useState(false);
@@ -47,27 +44,26 @@ export default function ProductDetailPage() {
     setCurrentImageIndex(0);
   }, [productId]);
 
+  // Load products from Supabase or localStorage
   useEffect(() => {
-    const load = () => setAllProducts(getStoredProducts());
-    load();
-    window.addEventListener("storage", load);
-    return () => window.removeEventListener("storage", load);
+    fetchProducts().then(setAllProducts);
   }, []);
 
   const product = allProducts.find(
     (p) => p.id === parseInt(productId as string)
   );
 
-  // Load live rating from stored reviews
+  // Load live rating from reviews (async)
   useEffect(() => {
     if (!product) return;
-    const reviews = getAllReviews(product.id);
-    if (reviews.length === 0) return;
-    const avg =
-      Math.round(
-        (reviews.reduce((s, r) => s + r.rating, 0) / reviews.length) * 10
-      ) / 10;
-    setLiveRating({ avg, count: reviews.length });
+    fetchReviews(product.id).then((reviews) => {
+      if (reviews.length === 0) return;
+      const avg =
+        Math.round(
+          (reviews.reduce((s, r) => s + r.rating, 0) / reviews.length) * 10
+        ) / 10;
+      setLiveRating({ avg, count: reviews.length });
+    });
   }, [product?.id, reviewsOpen]); // re-compute after drawer closes (user may have added)
 
   if (!product) {
@@ -82,9 +78,7 @@ export default function ProductDetailPage() {
   const displayRating = liveRating?.avg ?? product.rating ?? 4.8;
   const displayCount = liveRating?.count ?? product.reviewsCount ?? 128;
 
-  // Filled stars: full + partial
-  const fullStars = Math.floor(displayRating);
-  const hasPartial = displayRating - fullStars >= 0.25;
+  const fullStars = Math.round(displayRating);
 
   const handlePrevImage = () => {
     setCurrentImageIndex((prev) =>
@@ -253,25 +247,16 @@ export default function ProductDetailPage() {
               >
                 {/* Stars */}
                 <div className="flex items-center gap-0.5">
-                  {[1, 2, 3, 4, 5].map((i) => {
-                    const filled = i <= fullStars;
-                    const partial = !filled && i === fullStars + 1 && hasPartial;
-                    return (
-                      <span key={i} className="relative inline-flex">
-                        {/* Base empty star */}
-                        <Star className="h-4 w-4 text-muted-foreground/25 fill-transparent" />
-                        {/* Filled overlay */}
-                        {(filled || partial) && (
-                          <span
-                            className="absolute inset-0 overflow-hidden"
-                            style={{ width: filled ? "100%" : "50%" }}
-                          >
-                            <Star className="h-4 w-4 fill-amber-400 text-amber-400" />
-                          </span>
-                        )}
-                      </span>
-                    );
-                  })}
+                  {[1, 2, 3, 4, 5].map((i) => (
+                    <Star
+                      key={i}
+                      className={`h-4 w-4 ${
+                        i <= fullStars
+                          ? "fill-amber-400 text-amber-400"
+                          : "fill-transparent text-muted-foreground/25"
+                      }`}
+                    />
+                  ))}
                 </div>
 
                 {/* Count */}
