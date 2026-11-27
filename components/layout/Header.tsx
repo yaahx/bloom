@@ -111,6 +111,12 @@ export default function Header() {
     { href: "/", label: "Home" },
     { href: "/shop", label: "Shop" },
     { href: "/contact", label: "Contact" },
+    ...(isAdminLoggedIn
+      ? [
+          { href: "/orders", label: "Orders" },
+          { href: "/products", label: "Products" },
+        ]
+      : []),
   ];
 
   return (
@@ -164,28 +170,26 @@ export default function Header() {
                 </Link>
               )}
 
-              {!isNewProductPage && (
-                <nav
-                  className="hidden md:flex items-center space-x-1"
-                  role="navigation"
-                  aria-label="Main navigation"
-                >
-                  {navItems.map(({ href, label }) => (
-                    <Link
-                      key={href}
-                      href={href}
-                      className={`py-1.5 px-3.5 rounded-lg text-sm font-medium transition-all duration-200 ${
-                        isActivePath(href)
-                          ? "bg-primary/10 text-primary font-semibold"
-                          : "text-muted-foreground hover:bg-muted hover:text-foreground"
-                      }`}
-                      aria-current={isActivePath(href) ? "page" : undefined}
-                    >
-                      {label}
-                    </Link>
-                  ))}
-                </nav>
-              )}
+              <nav
+                className="hidden md:flex items-center space-x-1"
+                role="navigation"
+                aria-label="Main navigation"
+              >
+                {navItems.map(({ href, label }) => (
+                  <Link
+                    key={href}
+                    href={href}
+                    className={`py-1.5 px-3.5 rounded-lg text-sm font-medium transition-all duration-200 ${
+                      isActivePath(href)
+                        ? "bg-primary/10 text-primary font-semibold"
+                        : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                    }`}
+                    aria-current={isActivePath(href) ? "page" : undefined}
+                  >
+                    {label}
+                  </Link>
+                ))}
+              </nav>
             </div>
 
             {/* Desktop Search */}
@@ -265,13 +269,11 @@ export default function Header() {
                 </div>
               )}
 
-              {/* Mobile Menu Hamburger (also shown on desktop in New Product mode) */}
+              {/* Mobile Menu Hamburger */}
               <button
                 type="button"
                 onClick={toggleMobileMenu}
-                className={`${
-                  isNewProductPage ? "" : "md:hidden"
-                } p-2 rounded-full hover:bg-muted transition-colors text-foreground`}
+                className="md:hidden p-2 rounded-full hover:bg-muted transition-colors text-foreground"
                 aria-label="Toggle navigation menu"
                 aria-expanded={isMobileOpen}
               >
@@ -302,12 +304,10 @@ export default function Header() {
             </div>
           )}
 
-          {/* Mobile Drawer Menu (also used on desktop in New Product mode) */}
+          {/* Mobile Drawer Menu */}
           {isMobileOpen && (
             <nav
-              className={`${
-                isNewProductPage ? "" : "md:hidden"
-              } mt-3 animate-in slide-in-from-top duration-200 border-t border-border/60 pt-3`}
+              className="md:hidden mt-3 animate-in slide-in-from-top duration-200 border-t border-border/60 pt-3"
               role="navigation"
               aria-label="Mobile navigation"
             >
