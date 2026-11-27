@@ -1,7 +1,23 @@
-import products from "@/data/products.json";
+"use client";
+
+import defaultProducts from "@/data/products.json";
+import { getStoredProducts } from "@/lib/products";
+import { Product } from "@/types/product";
+import { useEffect, useState } from "react";
 import ProductCard from "./ProductCard";
 
 export default function ProductList() {
+  const [products, setProducts] = useState<Product[]>(
+    defaultProducts as Product[]
+  );
+
+  useEffect(() => {
+    const load = () => setProducts(getStoredProducts());
+    load();
+    window.addEventListener("storage", load);
+    return () => window.removeEventListener("storage", load);
+  }, []);
+
   return (
     <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 max-w-7xl mx-auto">
       {products.length > 0 ? (

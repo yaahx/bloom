@@ -4,6 +4,7 @@ import ProductCard from "@/components/home/ProductCard";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import defaultProducts from "@/data/products.json";
+import { getStoredProducts } from "@/lib/products";
 import { formatKES } from "@/lib/utils";
 import { Product } from "@/types/product";
 import {
@@ -42,11 +43,7 @@ export default function ShopClient() {
   useEffect(() => {
     const loadData = () => {
       try {
-        const stored = localStorage.getItem("bloom_custom_products");
-        if (stored) {
-          const customList: Product[] = JSON.parse(stored);
-          setProducts([...customList, ...(defaultProducts as Product[])]);
-        }
+        setProducts(getStoredProducts());
 
         const storedCats = localStorage.getItem("bloom_custom_categories");
         if (storedCats) {

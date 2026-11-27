@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { useCart } from "@/context/CartContext";
 import defaultProducts from "@/data/products.json";
+import { getStoredProducts } from "@/lib/products";
 import { formatKES } from "@/lib/utils";
 import { Product } from "@/types/product";
 import {
@@ -41,15 +42,10 @@ export default function ProductDetailPage() {
   }, [productId]);
 
   useEffect(() => {
-    try {
-      const stored = localStorage.getItem("bloom_custom_products");
-      if (stored) {
-        const custom: Product[] = JSON.parse(stored);
-        setAllProducts([...custom, ...(defaultProducts as Product[])]);
-      }
-    } catch {
-      // ignore
-    }
+    const load = () => setAllProducts(getStoredProducts());
+    load();
+    window.addEventListener("storage", load);
+    return () => window.removeEventListener("storage", load);
   }, []);
 
   const product = allProducts.find((p) => p.id === parseInt(productId as string));
@@ -210,7 +206,13 @@ export default function ProductDetailPage() {
                 {product.category}
               </span>
               <span>&bull;</span>
-              <span className="text-xs text-muted-foreground">In Stock</span>
+              <span
+                className={`text-xs font-medium ${
+                  product.isSoldOut ? "text-destructive" : "text-muted-foreground"
+                }`}
+              >
+                {product.isSoldOut ? "Out of Stock" : "In Stock"}
+              </span>
             </div>
 
             <h1 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-foreground tracking-tight">
@@ -292,10 +294,12 @@ export default function ProductDetailPage() {
               <Button
                 size="lg"
                 onClick={handleAddToCart}
-                disabled={isAdding}
-                className="h-11 bg-primary text-primary-foreground hover:bg-primary/90 font-bold text-sm rounded-xl gap-2 shadow-xs"
+                disabled={isAdding || Boolean(product.isSoldOut)}
+                className="h-11 bg-primary text-primary-foreground hover:bg-primary/90 font-bold text-sm rounded-xl gap-2 shadow-xs disabled:opacity-50"
               >
-                {isAdding ? (
+                {product.isSoldOut ? (
+                  <span>Out of Stock</span>
+                ) : isAdding ? (
                   <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
                 ) : justAdded ? (
                   <>

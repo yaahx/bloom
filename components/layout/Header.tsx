@@ -34,6 +34,18 @@ export default function Header() {
   const pathname = usePathname();
   const router = useRouter();
   const isNewProductPage = pathname === "/admin" || pathname?.startsWith("/admin/");
+  const isProductsPage =
+    pathname === "/products" || pathname?.startsWith("/products/");
+  const isOrdersPage =
+    pathname === "/orders" || pathname?.startsWith("/orders/");
+  const isAdminSubPage = isNewProductPage || isProductsPage || isOrdersPage;
+  const adminPageTitle = isNewProductPage
+    ? "New Product"
+    : isProductsPage
+    ? "Products"
+    : isOrdersPage
+    ? "Orders"
+    : null;
 
   useEffect(() => {
     const handleScroll = () => {
@@ -122,7 +134,7 @@ export default function Header() {
   return (
     <>
       {/* Top Admin Status Bar when Logged In */}
-      {isAdminLoggedIn && !isNewProductPage && (
+      {isAdminLoggedIn && !isAdminSubPage && (
         <div className="bg-foreground text-background text-xs py-1.5 px-4">
           <div className="container mx-auto flex items-center justify-between">
             <Link
@@ -156,9 +168,9 @@ export default function Header() {
           <div className="flex items-center justify-between">
             {/* Logo & Navigation */}
             <div className="flex items-center space-x-6 lg:space-x-10">
-              {isNewProductPage ? (
+              {adminPageTitle ? (
                 <span className="text-lg sm:text-xl font-bold tracking-tight text-foreground">
-                  New Product
+                  {adminPageTitle}
                 </span>
               ) : (
                 <Link
@@ -193,7 +205,7 @@ export default function Header() {
             </div>
 
             {/* Desktop Search */}
-            {!isNewProductPage && (
+            {!isAdminSubPage && (
               <div className="hidden lg:flex flex-1 max-w-md mx-8">
                 <form onSubmit={handleSearchSubmit} className="relative w-full">
                   <input
@@ -212,7 +224,7 @@ export default function Header() {
             {/* Right Side Actions */}
             <div className="flex items-center space-x-2 sm:space-x-3">
               {/* Mobile Search Toggle */}
-              {!isNewProductPage && (
+              {!isAdminSubPage && (
                 <button
                   type="button"
                   onClick={() => setIsSearchOpen(!isSearchOpen)}
@@ -224,7 +236,7 @@ export default function Header() {
               )}
 
               {/* Shopping Cart Button */}
-              {!isNewProductPage && (
+              {!isAdminSubPage && (
                 <Link
                   href="/cart"
                   className="relative p-2 rounded-full hover:bg-muted transition-all duration-200 group text-foreground"
@@ -243,7 +255,7 @@ export default function Header() {
               )}
 
               {/* Sign In (Admin Access) Button */}
-              {!isNewProductPage && (
+              {!isAdminSubPage && (
                 <div className="hidden sm:flex items-center">
                   {isAdminLoggedIn ? (
                     <Link href="/admin">
@@ -287,7 +299,7 @@ export default function Header() {
           </div>
 
           {/* Expandable Mobile Search Bar */}
-          {!isNewProductPage && isSearchOpen && (
+          {!isAdminSubPage && isSearchOpen && (
             <div className="lg:hidden mt-3 pt-3 border-t border-border/60 animate-in slide-in-from-top duration-200">
               <form onSubmit={handleSearchSubmit} className="relative">
                 <input
