@@ -1,24 +1,93 @@
+"use client";
+
 import CategoryCarousel from "@/components/home/CategoryCarousel";
-import rawProducts from "@/data/products.json";
+import defaultProducts from "@/data/products.json";
+import {
+  BASE_CATEGORIES,
+  fetchCategories,
+  fetchProducts,
+  PRODUCTS_UPDATED_EVENT,
+} from "@/lib/products";
 import { Product } from "@/types/product";
 import { Clock } from "lucide-react";
 import Link from "next/link";
-
-const products = rawProducts as Product[];
+import { useEffect, useMemo, useState } from "react";
 
 export default function Home() {
-  const shoes = products.filter((p) => p.category === "Shoes");
-  const tshirts = products.filter((p) => p.category === "T-Shirts");
-  const hoodies = products.filter((p) => p.category === "Hoodies");
-  const accessories = products.filter((p) => p.category === "Accessories");
+  const [products, setProducts] = useState<Product[]>(
+    defaultProducts as Product[]
+  );
+  const [categories, setCategories] = useState<string[]>(BASE_CATEGORIES);
 
-  const categories = [
-    { name: "All", href: "/shop" },
-    { name: "Shoes", href: "/shop?category=Shoes" },
-    { name: "T-Shirts", href: "/shop?category=T-Shirts" },
-    { name: "Hoodies", href: "/shop?category=Hoodies" },
-    { name: "Accessories", href: "/shop?category=Accessories" },
-  ];
+  useEffect(() => {
+    let active = true;
+    const loadData = async () => {
+      try {
+        const [prodList, catList] = await Promise.all([
+          fetchProducts(),
+          fetchCategories(),
+        ]);
+        if (!active) return;
+        setProducts(prodList);
+        setCategories(catList);
+      } catch {
+        // ignore
+      }
+    };
+
+    loadData();
+
+    window.addEventListener(PRODUCTS_UPDATED_EVENT, loadData);
+    window.addEventListener("storage", loadData);
+    return () => {
+      active = false;
+      window.removeEventListener(PRODUCTS_UPDATED_EVENT, loadData);
+      window.removeEventListener("storage", loadData);
+    };
+  }, []);
+
+  // Compute active categories: only categories that have at least 1 product
+  // Preserves base order (Shoes, T-Shirts, Hoodies, Accessories), then appends any custom categories
+  const activeCategories = useMemo(() => {
+    const seen = new Set<string>();
+    const uniqueCatNames: string[] = [];
+
+    const candidateList = [
+      ...BASE_CATEGORIES,
+      ...categories,
+      ...products.map((p) => p.category).filter(Boolean),
+    ];
+
+    for (const cat of candidateList) {
+      const lower = cat.toLowerCase();
+      if (!seen.has(lower)) {
+        seen.add(lower);
+        uniqueCatNames.push(cat);
+      }
+    }
+
+    return uniqueCatNames
+      .map((catName) => {
+        const catProducts = products.filter(
+          (p) => p.category?.toLowerCase() === catName.toLowerCase()
+        );
+        return {
+          name: catName,
+          products: catProducts,
+        };
+      })
+      .filter((c) => c.products.length > 0);
+  }, [products, categories]);
+
+  const pillCategories = useMemo(() => {
+    return [
+      { name: "All", href: "/shop" },
+      ...activeCategories.map((c) => ({
+        name: c.name,
+        href: `/shop?category=${encodeURIComponent(c.name)}`,
+      })),
+    ];
+  }, [activeCategories]);
 
   return (
     <div className="bg-background min-h-screen">
@@ -29,7 +98,7 @@ export default function Home() {
             className="flex items-center gap-2 overflow-x-auto py-3 scroll-smooth scrollbar-none"
             style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
           >
-            {categories.map((cat, index) => (
+            {pillCategories.map((cat, index) => (
               <Link key={cat.name} href={cat.href} className="shrink-0">
                 <span
                   className={`inline-flex items-center px-4 py-1.5 rounded-full text-xs sm:text-sm font-medium transition-all duration-200 cursor-pointer ${
@@ -51,7 +120,7 @@ export default function Home() {
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="max-w-4xl mx-auto">
             <div className="rounded-2xl border border-border/80 bg-card overflow-hidden shadow-sm hover:shadow-md transition-shadow">
-              {/* Location Bar Header (Cleaned as requested) */}
+              {/* Location Bar Header */}
               <div className="p-4 sm:p-5 border-b border-border/60 bg-card">
                 <h3 className="font-bold text-base sm:text-lg text-foreground tracking-tight">
                   Bloom shop
@@ -87,33 +156,14 @@ export default function Home() {
 
       {/* Main Catalog Carousels Container */}
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-10 space-y-6 sm:space-y-10">
-        {/* Shoes Category Carousel */}
-        <CategoryCarousel
-          title="Shoes"
-          categoryKey="Shoes"
-          products={shoes}
-        />
-
-        {/* T-Shirts Category Carousel */}
-        <CategoryCarousel
-          title="T-Shirts"
-          categoryKey="T-Shirts"
-          products={tshirts}
-        />
-
-        {/* Hoodies Category Carousel */}
-        <CategoryCarousel
-          title="Hoodies & Outerwear"
-          categoryKey="Hoodies"
-          products={hoodies}
-        />
-
-        {/* Accessories Category Carousel */}
-        <CategoryCarousel
-          title="Accessories"
-          categoryKey="Accessories"
-          products={accessories}
-        />
+        {activeCategories.map((cat) => (
+          <CategoryCarousel
+            key={cat.name}
+            title={cat.name}
+            categoryKey={cat.name}
+            products={cat.products}
+          />
+        ))}
       </div>
     </div>
   );
