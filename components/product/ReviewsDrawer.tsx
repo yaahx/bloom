@@ -210,15 +210,18 @@ export default function ReviewsDrawer({
     }
   }, [isOpen]);
 
-  // Lock body scroll while open
+  // Lock body scroll + signal WhatsApp widget to hide while open
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = "hidden";
+      document.body.setAttribute("data-reviews-open", "true");
     } else {
       document.body.style.overflow = "";
+      document.body.removeAttribute("data-reviews-open");
     }
     return () => {
       document.body.style.overflow = "";
+      document.body.removeAttribute("data-reviews-open");
     };
   }, [isOpen]);
 
