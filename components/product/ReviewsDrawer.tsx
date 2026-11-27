@@ -404,7 +404,7 @@ export default function ReviewsDrawer({
                   type="button"
                   onMouseEnter={() => setHoverRating(star)}
                   onMouseLeave={() => setHoverRating(0)}
-                  onClick={() => setSelectedRating(star)}
+                  onClick={() => setSelectedRating(star === selectedRating ? 0 : star)}
                   className="active:scale-125 transition-transform duration-100"
                   aria-label={`Rate ${star} star${star > 1 ? "s" : ""}`}
                 >
