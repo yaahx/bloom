@@ -130,12 +130,27 @@ export default function Header() {
     }
   };
 
+  // Keep search input in sync when on shop page
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      if (pathname === "/shop") {
+        const q = new URLSearchParams(window.location.search).get("search");
+        setSearchQuery(q || "");
+      } else {
+        setSearchQuery("");
+      }
+    }
+  }, [pathname]);
+
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (searchQuery.trim()) {
-      router.push(`/shop?search=${encodeURIComponent(searchQuery.trim())}`);
-      setIsSearchOpen(false);
+    const trimmed = searchQuery.trim();
+    if (trimmed) {
+      router.push(`/shop?search=${encodeURIComponent(trimmed)}`);
+    } else {
+      router.push("/shop");
     }
+    setIsSearchOpen(false);
   };
 
   const toggleMobileMenu = useCallback(() => {
@@ -245,10 +260,26 @@ export default function Header() {
                     placeholder="Search shoes, t-shirts, hoodies, bags..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-full pl-9 pr-4 py-1.5 text-xs sm:text-sm bg-muted/60 border border-border/80 rounded-full focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-transparent transition-all"
+                    className="w-full pl-9 pr-8 py-1.5 text-xs sm:text-sm bg-muted/60 border border-border/80 rounded-full focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-transparent transition-all"
                     aria-label="Search products"
                   />
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <button
+                    type="submit"
+                    aria-label="Search"
+                    className="absolute left-2.5 top-1/2 -translate-y-1/2 p-0.5 text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
+                  >
+                    <Search className="h-4 w-4" />
+                  </button>
+                  {searchQuery && (
+                    <button
+                      type="button"
+                      onClick={() => setSearchQuery("")}
+                      aria-label="Clear search"
+                      className="absolute right-2.5 top-1/2 -translate-y-1/2 p-0.5 text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
+                    >
+                      <X className="h-3.5 w-3.5" />
+                    </button>
+                  )}
                 </form>
               </div>
             )}
@@ -333,17 +364,36 @@ export default function Header() {
           {/* Expandable Mobile Search Bar */}
           {!isAdminSubPage && isSearchOpen && (
             <div className="lg:hidden mt-3 pt-3 border-t border-border/60 animate-in slide-in-from-top duration-200">
-              <form onSubmit={handleSearchSubmit} className="relative">
-                <input
-                  type="search"
-                  placeholder="Search products..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full pl-9 pr-4 py-2 text-sm bg-muted/60 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/40"
-                  aria-label="Search products"
-                  autoFocus
-                />
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <form onSubmit={handleSearchSubmit} className="relative flex items-center gap-2">
+                <div className="relative flex-1">
+                  <input
+                    type="search"
+                    placeholder="Search products..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="w-full pl-9 pr-8 py-2 text-sm bg-muted/60 border border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/40"
+                    aria-label="Search products"
+                    autoFocus
+                  />
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
+                  {searchQuery && (
+                    <button
+                      type="button"
+                      onClick={() => setSearchQuery("")}
+                      aria-label="Clear search"
+                      className="absolute right-2.5 top-1/2 -translate-y-1/2 p-0.5 text-muted-foreground hover:text-foreground"
+                    >
+                      <X className="h-3.5 w-3.5" />
+                    </button>
+                  )}
+                </div>
+                <Button
+                  type="submit"
+                  size="sm"
+                  className="h-9 px-3.5 rounded-xl bg-primary text-primary-foreground font-semibold text-xs shrink-0"
+                >
+                  Search
+                </Button>
               </form>
             </div>
           )}

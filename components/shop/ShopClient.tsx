@@ -23,6 +23,76 @@ import {
 import { useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 
+// Fuzzy & token-based product search helper
+function matchesProductSearch(product: Product, query: string): boolean {
+  if (!query || !query.trim()) return true;
+
+  const normalize = (text: string) =>
+    text
+      .toLowerCase()
+      .replace(/[-_]/g, " ")
+      .replace(/[^\w\s]/g, "")
+      .replace(/\s+/g, " ")
+      .trim();
+
+  const cleanQuery = normalize(query);
+  if (!cleanQuery) return true;
+
+  const rawFields = [
+    product.name,
+    product.category,
+    product.description || "",
+    product.badge || "",
+  ]
+    .join(" ")
+    .toLowerCase();
+
+  const cleanTarget = normalize(rawFields);
+
+  // 1. Direct raw or clean substring match (fastest)
+  if (
+    rawFields.includes(query.toLowerCase().trim()) ||
+    cleanTarget.includes(cleanQuery)
+  ) {
+    return true;
+  }
+
+  // 2. Compact space-less match (e.g. "air flex" vs "airflex", "t shirt" vs "tshirt")
+  const compactTarget = cleanTarget.replace(/\s+/g, "");
+  const compactQuery = cleanQuery.replace(/\s+/g, "");
+  if (
+    compactTarget.includes(compactQuery) ||
+    compactQuery.includes(compactTarget)
+  ) {
+    return true;
+  }
+
+  // 3. Multi-word / token search: all search terms must match somewhere in the product
+  const tokens = cleanQuery.split(" ").filter(Boolean);
+  const words = cleanTarget.split(" ").filter(Boolean);
+
+  const allTokensMatch = tokens.every((token) => {
+    if (cleanTarget.includes(token)) return true;
+
+    // Stemming for common plurals (e.g. "shoes" -> "shoe", "hoodies" -> "hoodie", "tees" -> "tee")
+    const stem = token.endsWith("ies")
+      ? token.slice(0, -3) + "y"
+      : token.endsWith("es")
+      ? token.slice(0, -2)
+      : token.endsWith("s")
+      ? token.slice(0, -1)
+      : token;
+
+    if (stem.length >= 3 && cleanTarget.includes(stem)) return true;
+
+    return words.some(
+      (w) => w.startsWith(token) || (stem.length >= 3 && w.startsWith(stem))
+    );
+  });
+
+  return allTokensMatch;
+}
+
 export default function ShopClient() {
   const searchParams = useSearchParams();
   const initialCategory = searchParams.get("category") || "All";
@@ -73,26 +143,28 @@ export default function ShopClient() {
   // Update from URL params
   useEffect(() => {
     const cat = searchParams.get("category");
-    if (cat) setSelectedCategory(cat);
+    setSelectedCategory(cat || "All");
     const q = searchParams.get("search");
-    if (q) setSearchQuery(q);
+    setSearchQuery(q || "");
   }, [searchParams]);
 
   const filteredProducts = useMemo(() => {
     return products
       .filter((p) => {
-        // Category filter
-        if (selectedCategory !== "All" && p.category !== selectedCategory) {
-          return false;
+        // Category filter (case-insensitive)
+        if (selectedCategory !== "All") {
+          const matchesCategory =
+            p.category?.toLowerCase() === selectedCategory.toLowerCase();
+          if (!matchesCategory) return false;
         }
-        // Search query
+
+        // Fast & flexible case-insensitive search
         if (searchQuery.trim()) {
-          const q = searchQuery.toLowerCase();
-          const matchesName = p.name.toLowerCase().includes(q);
-          const matchesDesc = p.description?.toLowerCase().includes(q);
-          const matchesCat = p.category?.toLowerCase().includes(q);
-          if (!matchesName && !matchesDesc && !matchesCat) return false;
+          if (!matchesProductSearch(p, searchQuery)) {
+            return false;
+          }
         }
+
         // Price filter
         if (p.price > maxPrice) {
           return false;
@@ -332,11 +404,24 @@ export default function ShopClient() {
                 No matching products found
               </h3>
               <p className="text-xs text-muted-foreground mt-1 max-w-sm mb-4">
-                We couldn&apos;t find any items matching your current filters. Try relaxing your search terms or price filter.
+                {selectedCategory !== "All" && searchQuery.trim() ? (
+                  <>
+                    No products matched &quot;<strong>{searchQuery}</strong>&quot; inside the <strong>{selectedCategory}</strong> category.
+                  </>
+                ) : (
+                  <>We couldn&apos;t find any items matching your current filters. Try relaxing your search terms or price filter.</>
+                )}
               </p>
-              <Button size="sm" variant="outline" onClick={resetFilters}>
-                Reset All Filters
-              </Button>
+              <div className="flex items-center gap-2 flex-wrap justify-center">
+                {selectedCategory !== "All" && searchQuery.trim() && (
+                  <Button size="sm" onClick={() => setSelectedCategory("All")} className="bg-primary text-primary-foreground">
+                    Search In All Categories
+                  </Button>
+                )}
+                <Button size="sm" variant="outline" onClick={resetFilters}>
+                  Reset All Filters
+                </Button>
+              </div>
             </div>
           )}
         </div>
