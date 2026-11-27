@@ -11,7 +11,14 @@ import { usePathname } from "next/navigation";
 
 export default function Footer() {
   const pathname = usePathname();
-  if (pathname === "/admin" || pathname?.startsWith("/admin/")) {
+  if (
+    pathname === "/admin" ||
+    pathname?.startsWith("/admin/") ||
+    pathname === "/orders" ||
+    pathname?.startsWith("/orders/") ||
+    pathname === "/products" ||
+    pathname?.startsWith("/products/")
+  ) {
     return null;
   }
 
